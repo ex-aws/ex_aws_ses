@@ -108,6 +108,37 @@ defmodule ExAws.SES do
     request(:send_raw_email, params)
   end
 
+  @doc """
+  Send a templated Email.
+  """
+  @type send_templated_email_opt :: {:configuration_set_name, String.t}
+    | {:return_path_arn, String.t}
+    | {:source, String.t}
+    | {:source_arn, String.t}
+    | {:tags, %{(String.t | atom) => String.t}}
+
+  @spec send_templated_email(dst :: destination, src :: binary, template :: binary, template_data :: binary, opts :: [send_templated_email_opt]) :: message
+  def send_templated_email(dst, src, template, template_data, opts \\ []) do
+    dst = Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
+      case Map.fetch(dst, key) do
+        {:ok, val} -> Map.put(acc, :"#{key}_addresses", val)
+        _ -> acc
+      end
+    end)
+
+    params =
+      opts
+      |> build_opts([:configuration_set_name, :return_path, :return_path_arn, :source_arn, :bcc])
+      |> Map.merge(format_member_attribute(:reply_to_addresses, opts[:reply_to]))
+      |> Map.merge(format_tags(opts[:tags]))
+      |> Map.merge(format_dst(dst))
+      |> Map.put_new("Source", src)
+      |> Map.put_new("Template", template)
+      |> Map.put_new("TemplateData", template_data)
+
+    request(:send_templated_email, params)
+  end
+
   @doc "Deletes the specified identity (an email address or a domain) from the list of verified identities."
   @spec delete_identity(binary) :: ExAws.Operation.Query.t
   def delete_identity(identity) do

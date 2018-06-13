@@ -116,6 +116,26 @@ defmodule ExAws.SES.ParserTest do
     }
   end
 
+  test "#parse send_templated_email" do
+    rsp = """
+    <SendTemplatedEmailResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">
+      <SendTemplatedEmailResult>
+        <MessageId>0100015914b22075-7a4e3573-ca72-41ce-8eda-388f81232ad9-000000</MessageId>
+      </SendTemplatedEmailResult>
+      <ResponseMetadata>
+        <RequestId>8194094b-c58a-11e6-b49d-838795cc7d3f</RequestId>
+      </ResponseMetadata>
+    </SendTemplatedEmailResponse>
+    """
+    |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :send_templated_email)
+    assert parsed_doc == %{
+      request_id: "8194094b-c58a-11e6-b49d-838795cc7d3f",
+      message_id: "0100015914b22075-7a4e3573-ca72-41ce-8eda-388f81232ad9-000000"
+    }
+  end
+
   test "#parse a delete_identity response" do
     rsp = """
       <DeleteIdentityResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">
