@@ -54,7 +54,7 @@ defmodule ExAws.SES do
     body: %{html: %{data: binary, charset: binary}, text: %{data: binary, charset: binary}},
     subject: %{data: binary, charset: binary}
   }
-  @type destination :: %{to: [email_address], bcc: [email_address], bcc: [email_address]}
+  @type destination :: %{to: [email_address], cc: [email_address], bcc: [email_address]}
 
   @type send_email_opt :: {:configuration_set_name, String.t}
     | {:reply_to, [email_address]}
