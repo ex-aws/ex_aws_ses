@@ -112,6 +112,7 @@ defmodule ExAws.SES do
   Send a templated Email.
   """
   @type send_templated_email_opt :: {:configuration_set_name, String.t}
+    | {:return_path, String.t}
     | {:return_path_arn, String.t}
     | {:source, String.t}
     | {:source_arn, String.t}
