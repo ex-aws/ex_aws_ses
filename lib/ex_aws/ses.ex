@@ -97,7 +97,7 @@ defmodule ExAws.SES do
     | {:source_arn, String.t}
     | {:tags, %{(String.t | atom) => String.t}}
 
-  @spec send_raw_email(binary, opts :: [send_raw_email_opt]) :: message
+  @spec send_raw_email(binary, opts :: [send_raw_email_opt]) :: ExAws.Operation.Query.t
   def send_raw_email(raw_msg, opts \\ []) do
     params =
       opts
@@ -118,7 +118,7 @@ defmodule ExAws.SES do
     | {:source_arn, String.t}
     | {:tags, %{(String.t | atom) => String.t}}
 
-  @spec send_templated_email(dst :: destination, src :: binary, template :: binary, template_data :: binary, opts :: [send_templated_email_opt]) :: message
+  @spec send_templated_email(dst :: destination, src :: binary, template :: binary, template_data :: binary, opts :: [send_templated_email_opt]) :: ExAws.Operation.Query.t
   def send_templated_email(dst, src, template, template_data, opts \\ []) do
     dst = Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
       case Map.fetch(dst, key) do
@@ -157,7 +157,7 @@ defmodule ExAws.SES do
   Notification type can be on of the :bounce, :complaint or :delivery.
   Requests are throttled to one per second.
   """
-  @spec set_identity_notification_topic(binary, notification_type, set_identity_notification_topic_opt) :: ExAws.Operation.Query.t
+  @spec set_identity_notification_topic(binary, notification_type, set_identity_notification_topic_opt | []) :: ExAws.Operation.Query.t
   def set_identity_notification_topic(identity, type, opts \\ []) when type in @notification_types do
     notification_type = Atom.to_string(type) |> String.capitalize()
     params =
