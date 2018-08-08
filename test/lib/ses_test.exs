@@ -76,8 +76,58 @@ defmodule ExAws.SESTest do
         "Tags.member.2.Name" => "tag2", "Tags.member.2.Value" => "tag2value1"
       }
 
-      assert expected == ExAws.SES.send_email(
+      assert expected == SES.send_email(
         dst, msg, "user@example.com", configuration_set_name: "test", return_path: "feedback@example.com",
+        return_path_arn: "arn:aws:ses:us-east-1:123456789012:identity/example.com",
+        source_arn: "east-1:123456789012:identity/example.com",
+        reply_to: ["user@example.com", "user1@example.com"],
+        tags:  [%{name: "tag1", value: "tag1value1"}, %{name: "tag2", value: "tag2value1"}]
+      ).params
+    end
+  end
+
+  describe "#send_templated_email" do
+    test "with required params only" do
+      dst =  %{to:  ["success@simulator.amazonses.com"]}
+      src = "user@example.com"
+      template_data = %{data1: "data1", data2: "data2"} |> Poison.encode!()
+
+      expected = %{
+        "Action" => "SendTemplatedEmail", "Destination.ToAddresses.member.1" => "success@simulator.amazonses.com",
+        "Template" => "my_template", "Source" => "user@example.com", "TemplateData" => template_data
+      }
+
+      assert expected == SES.send_templated_email(dst, src, "my_template", template_data).params
+    end
+
+    test "with all optional params" do
+      dst =  %{
+        bcc: ["success@simulator.amazonses.com"],
+        cc:  ["success@simulator.amazonses.com"],
+        to:  ["success@simulator.amazonses.com", "bounce@simulator.amazonses.com"]
+      }
+      
+      src = "user@example.com"
+      template_data = %{data1: "data1", data2: "data2"} |> Poison.encode!()
+
+      expected = %{
+        "Action" => "SendTemplatedEmail", "ConfigurationSetName" => "test",
+        "Destination.ToAddresses.member.1" => "success@simulator.amazonses.com",
+        "Destination.ToAddresses.member.2" => "bounce@simulator.amazonses.com",
+        "Destination.CcAddresses.member.1" => "success@simulator.amazonses.com",
+        "Destination.BccAddresses.member.1" => "success@simulator.amazonses.com",
+        "ReplyToAddresses.member.1" => "user@example.com", "ReplyToAddresses.member.2" => "user1@example.com",
+        "ReturnPath" => "feedback@example.com",
+        "ReturnPathArn" => "arn:aws:ses:us-east-1:123456789012:identity/example.com",
+        "Source" => "user@example.com",
+        "SourceArn" => "east-1:123456789012:identity/example.com",
+        "Tags.member.1.Name" => "tag1", "Tags.member.1.Value" => "tag1value1",
+        "Tags.member.2.Name" => "tag2", "Tags.member.2.Value" => "tag2value1",
+        "Template" => "my_template", "TemplateData" => template_data
+      }
+
+      assert expected == SES.send_templated_email(
+        dst, src, "my_template", template_data, configuration_set_name: "test", return_path: "feedback@example.com",
         return_path_arn: "arn:aws:ses:us-east-1:123456789012:identity/example.com",
         source_arn: "east-1:123456789012:identity/example.com",
         reply_to: ["user@example.com", "user1@example.com"],
