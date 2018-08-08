@@ -46,6 +46,7 @@ defmodule ExAws.SES.Mixfile do
       {:hackney, ">= 0.0.0", only: [:dev, :test]},
       {:sweet_xml, ">= 0.0.0", only: [:dev, :test]},
       {:poison, ">= 0.0.0", only: [:dev, :test]},
+      {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false},
       ex_aws(),
     ]
   end
