@@ -183,4 +183,52 @@ defmodule ExAws.SESTest do
     assert expected == SES.set_identity_headers_in_notifications_enabled(ctx.email, :delivery, enabled).params
   end
 
+
+  describe "#create_template" do
+    test "with required params only" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
+
+      expected = %{
+        "Action" => "CreateTemplate",
+        "Template.TemplateName" => templateName,
+        "Template.SubjectPart" => subject,
+        "Template.HtmlPart" => html,
+        "Template.TextPart" => text
+      }
+
+      assert expected == SES.create_template(templateName, subject, html, text).params
+    end
+
+    test "with all optional params" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
+
+      expected = %{
+        "Action" => "CreateTemplate",
+        "Template.TemplateName" => templateName,
+        "Template.SubjectPart" => subject,
+        "Template.HtmlPart" => html,
+        "Template.TextPart" => text,
+        "ConfigurationSetName" => "test"
+      }
+
+      assert expected == SES.create_template(templateName, subject, html, text, configuration_set_name: "test").params
+    end
+  end
+
+  test "#delete_template" do
+    templateName = "MyTemplate"
+
+    expected = %{
+      "Action" => "DeleteTemplate",
+      "TemplateName" => templateName
+    }
+
+    assert expected == SES.delete_template(templateName).params
+  end
 end

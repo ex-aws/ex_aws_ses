@@ -46,30 +46,65 @@ defmodule ExAws.SES do
     request(:list_configuration_sets, params)
   end
 
+  ## Templates
+  ######################
+
+  @doc """
+  Create an email template.
+  """
+  @type create_template_opt :: {:configuration_set_name, String.t()}
+  @spec create_template(binary, binary, binary, binary, opts :: [create_template_opt]) :: ExAws.Operation.Query.t()
+  def create_template(template_name, subject, html, text, opts \\ []) do
+    template = %{
+      "TemplateName" => template_name,
+      "SubjectPart" => subject,
+      "HtmlPart" => html,
+      "TextPart" => text
+    }
+
+    params =
+      opts
+      |> build_opts([:configuration_set_name])
+      |> Map.merge(flatten_attrs(template, "Template"))
+
+    request(:create_template, params)
+  end
+
+  @doc """
+  Delete an email template.
+  """
+  @spec delete_template(binary) :: ExAws.Operation.Query.t()
+  def delete_template(template_name) do
+    params = %{
+      "TemplateName" => template_name
+    }
+
+    request(:delete_template, params)
+  end
+
   ## Emails
   ######################
 
   @type email_address :: binary
 
   @type message :: %{
-          body: %{html: %{data: binary, charset: binary}, text: %{data: binary, charset: binary}},
-          subject: %{data: binary, charset: binary}
-        }
+                     body: %{html: %{data: binary, charset: binary}, text: %{data: binary, charset: binary}},
+                     subject: %{data: binary, charset: binary}
+                   }
   @type destination :: %{to: [email_address], cc: [email_address], bcc: [email_address]}
 
   @type send_email_opt ::
           {:configuration_set_name, String.t()}
           | {:reply_to, [email_address]}
           | {:return_path, String.t()}
-          | {:return_path_arn, String.t()}
-          | {:source, String.t()}
-          | {:source_arn, String.t()}
-          | {:tags, %{(String.t() | atom) => String.t()}}
+            | {:return_path_arn, String.t()}
+            | {:source, String.t()}
+              | {:source_arn, String.t()}
+              | {:tags, %{(String.t() | atom) => String.t()}}
 
   @doc "Composes an email message"
   @spec send_email(dst :: destination, msg :: message, src :: binary) :: ExAws.Operation.Query.t()
-  @spec send_email(dst :: destination, msg :: message, src :: binary, opts :: [send_email_opt]) ::
-          ExAws.Operation.Query.t()
+  @spec send_email(dst :: destination, msg :: message, src :: binary, opts :: [send_email_opt]) :: ExAws.Operation.Query.t()
   def send_email(dst, msg, src, opts \\ []) do
     dst =
       Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
@@ -98,9 +133,9 @@ defmodule ExAws.SES do
           {:configuration_set_name, String.t()}
           | {:from_arn, String.t()}
           | {:return_path_arn, String.t()}
-          | {:source, String.t()}
-          | {:source_arn, String.t()}
-          | {:tags, %{(String.t() | atom) => String.t()}}
+            | {:source, String.t()}
+            | {:source_arn, String.t()}
+              | {:tags, %{(String.t() | atom) => String.t()}}
 
   @spec send_raw_email(binary, opts :: [send_raw_email_opt]) :: ExAws.Operation.Query.t()
   def send_raw_email(raw_msg, opts \\ []) do
@@ -120,9 +155,9 @@ defmodule ExAws.SES do
           {:configuration_set_name, String.t()}
           | {:return_path, String.t()}
           | {:return_path_arn, String.t()}
-          | {:source, String.t()}
-          | {:source_arn, String.t()}
-          | {:tags, %{(String.t() | atom) => String.t()}}
+            | {:source, String.t()}
+            | {:source_arn, String.t()}
+              | {:tags, %{(String.t() | atom) => String.t()}}
 
   @spec send_templated_email(
           dst :: destination,
@@ -170,8 +205,7 @@ defmodule ExAws.SES do
   Notification type can be on of the :bounce, :complaint or :delivery.
   Requests are throttled to one per second.
   """
-  @spec set_identity_notification_topic(binary, notification_type, set_identity_notification_topic_opt | []) ::
-          ExAws.Operation.Query.t()
+  @spec set_identity_notification_topic(binary, notification_type, set_identity_notification_topic_opt | []) :: ExAws.Operation.Query.t()
   def set_identity_notification_topic(identity, type, opts \\ []) when type in @notification_types do
     notification_type = Atom.to_string(type) |> String.capitalize()
 
@@ -206,10 +240,7 @@ defmodule ExAws.SES do
   def set_identity_headers_in_notifications_enabled(identity, type, enabled) do
     notification_type = Atom.to_string(type) |> String.capitalize()
 
-    request(
-      :set_identity_headers_in_notifications_enabled,
-      %{"Identity" => identity, "NotificationType" => notification_type, "Enabled" => enabled}
-    )
+    request(:set_identity_headers_in_notifications_enabled, %{"Identity" => identity, "NotificationType" => notification_type, "Enabled" => enabled})
   end
 
   defp format_dst(dst) do
