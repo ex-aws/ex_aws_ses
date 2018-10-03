@@ -136,6 +136,41 @@ defmodule ExAws.SES.ParserTest do
     }
   end
 
+
+  test "#parse send_bulk_templated_email" do
+    rsp =
+      """
+      <SendBulkTemplatedEmailResponse xmlns=\"http://ses.amazonaws.com/doc/2010-12-01/\">
+        <SendBulkTemplatedEmailResult>
+          <Status>
+            <member>
+              <MessageId>110000663377dd66-44ffaaaa-11bb-44dd-aa77-998899883388-000000</MessageId>
+              <Status>Success</Status>
+            </member>
+            <member>
+              <MessageId>110000663377dd66-778888dd-cc99-44aa-aa99-bbdd99ddff88-000000</MessageId>
+              <Status>Success</Status>
+            </member>
+          </Status>
+        </SendBulkTemplatedEmailResult>
+        <ResponseMetadata>
+          <RequestId>22ff88dd-cc11-11ee-99bb-5599ee1144dd</RequestId>
+        </ResponseMetadata>
+      </SendBulkTemplatedEmailResponse>"
+      """
+      |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :send_bulk_templated_email)
+
+    assert parsed_doc == %{
+             request_id: "22ff88dd-cc11-11ee-99bb-5599ee1144dd",
+             messages: [
+               %{message_id: "110000663377dd66-44ffaaaa-11bb-44dd-aa77-998899883388-000000", status: "Success"},
+               %{message_id: "110000663377dd66-778888dd-cc99-44aa-aa99-bbdd99ddff88-000000", status: "Success"}
+             ]
+           }
+  end
+
   test "#parse a delete_identity response" do
     rsp = """
       <DeleteIdentityResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">

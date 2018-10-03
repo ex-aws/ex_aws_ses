@@ -136,6 +136,101 @@ defmodule ExAws.SESTest do
     end
   end
 
+  describe "#send_bulk_templated_email" do
+    test "with required params only" do
+      template = "my_template"
+      source = "user@example.com"
+
+      replacement_template_data1 = %{data1: "value1"} |> Poison.encode!()
+      replacement_template_data2 = %{data1: "value2"} |> Poison.encode!()
+
+      destinations = [
+        %{destination: %{to: ["email1@email.com", "email2@email.com"]}, replacement_template_data: replacement_template_data1},
+        %{
+          destination: %{to: ["email3@email.com"], cc: ["email4@email.com", "email5@email.com"], bcc: ["email6@email.com", "email7@email.com"]},
+          replacement_template_data: replacement_template_data2
+        },
+        %{destination: %{to: ["email8@email.com"]}}
+      ]
+
+      expected = %{
+        "Action" => "SendBulkTemplatedEmail",
+        "Template" => "my_template",
+        "Source" => "user@example.com",
+        "Destinations.member.1.Destination.ToAddresses.member.1" => "email1@email.com",
+        "Destinations.member.1.Destination.ToAddresses.member.2" => "email2@email.com",
+        "Destinations.member.1.ReplacementTemplateData" => replacement_template_data1,
+        "Destinations.member.2.Destination.ToAddresses.member.1" => "email3@email.com",
+        "Destinations.member.2.Destination.CcAddresses.member.1" => "email4@email.com",
+        "Destinations.member.2.Destination.CcAddresses.member.2" => "email5@email.com",
+        "Destinations.member.2.Destination.BccAddresses.member.1" => "email6@email.com",
+        "Destinations.member.2.Destination.BccAddresses.member.2" => "email7@email.com",
+        "Destinations.member.2.ReplacementTemplateData" => replacement_template_data2,
+        "Destinations.member.3.Destination.ToAddresses.member.1" => "email8@email.com",
+        "DefaultTemplateData" => "{}"
+      }
+
+      assert expected == SES.send_bulk_templated_email(template, source, destinations).params
+    end
+
+    test "with all optional params" do
+      template = "my_template"
+      source = "user@example.com"
+
+      replacement_template_data1 = %{data1: "value1"} |> Poison.encode!()
+      replacement_template_data2 = %{data1: "value2"} |> Poison.encode!()
+      default_template_data = %{data1: "DefaultValue"} |> Poison.encode!()
+
+      destinations = [
+        %{destination: %{to: ["email1@email.com", "email2@email.com"]}, replacement_template_data: replacement_template_data1},
+        %{
+          destination: %{to: ["email3@email.com"], cc: ["email4@email.com", "email5@email.com"], bcc: ["email6@email.com", "email7@email.com"]},
+          replacement_template_data: replacement_template_data2
+        },
+        %{destination: %{to: ["email8@email.com"]}}
+      ]
+
+      expected = %{
+        "Action" => "SendBulkTemplatedEmail",
+        "ConfigurationSetName" => "test",
+        "Template" => "my_template",
+        "Source" => "user@example.com",
+        "Destinations.member.1.Destination.ToAddresses.member.1" => "email1@email.com",
+        "Destinations.member.1.Destination.ToAddresses.member.2" => "email2@email.com",
+        "Destinations.member.1.ReplacementTemplateData" => replacement_template_data1,
+        "Destinations.member.2.Destination.ToAddresses.member.1" => "email3@email.com",
+        "Destinations.member.2.Destination.CcAddresses.member.1" => "email4@email.com",
+        "Destinations.member.2.Destination.CcAddresses.member.2" => "email5@email.com",
+        "Destinations.member.2.Destination.BccAddresses.member.1" => "email6@email.com",
+        "Destinations.member.2.Destination.BccAddresses.member.2" => "email7@email.com",
+        "Destinations.member.2.ReplacementTemplateData" => replacement_template_data2,
+        "Destinations.member.3.Destination.ToAddresses.member.1" => "email8@email.com",
+        "DefaultTemplateData" => default_template_data,
+        "ReturnPath" => "feedback@example.com",
+        "ReturnPathArn" => "arn:aws:ses:us-east-1:123456789012:identity/example.com",
+        "SourceArn" => "east-1:123456789012:identity/example.com",
+        "Tags.member.1.Name" => "tag1",
+        "Tags.member.1.Value" => "tag1value1",
+        "Tags.member.2.Name" => "tag2",
+        "Tags.member.2.Value" => "tag2value1",
+      }
+
+      assert expected ==
+               SES.send_bulk_templated_email(
+                 template,
+                 source,
+                 destinations,
+                 default_template_data: default_template_data,
+                 configuration_set_name: "test",
+                 return_path: "feedback@example.com",
+                 return_path_arn: "arn:aws:ses:us-east-1:123456789012:identity/example.com",
+                 source_arn: "east-1:123456789012:identity/example.com",
+                 reply_to: ["user@example.com", "user1@example.com"],
+                 tags: [%{name: "tag1", value: "tag1value1"}, %{name: "tag2", value: "tag2value1"}]
+               ).params
+    end
+  end
+
   test "#delete_identity", ctx do
     expected = %{"Action" => "DeleteIdentity", "Identity" => ctx.email}
     assert expected == SES.delete_identity(ctx.email).params
