@@ -200,6 +200,36 @@ defmodule ExAws.SES.ParserTest do
     assert parsed_doc == %{request_id: "01b49b78-30ca-11e7-948a-399bafb173a2"}
   end
 
+  test "#parse create_template" do
+    rsp = """
+          <CreateTemplateResponse xmlns=\"http://ses.amazonaws.com/doc/2010-12-01/\">
+            <CreateTemplateResult/>
+            <ResponseMetadata>
+              <RequestId>9876defg-c666-111e-88aa-ee8833eeffaa</RequestId>
+            </ResponseMetadata>
+          </CreateTemplateResponse>
+          """
+          |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :create_template)
+    assert parsed_doc == %{request_id: "9876defg-c666-111e-88aa-ee8833eeffaa"}
+  end
+
+  test "#parse delete_template" do
+    rsp = """
+          <DeleteTemplateResponse xmlns=\"http://ses.amazonaws.com/doc/2010-12-01/\">
+            <DeleteTemplateResult/>
+              <ResponseMetadata>
+                <RequestId>12345abcd-c666-111e-88aa-cc8899bb1177</RequestId>
+              </ResponseMetadata>
+          </DeleteTemplateResponse>
+          """
+          |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :delete_template)
+    assert parsed_doc == %{request_id: "12345abcd-c666-111e-88aa-cc8899bb1177"}
+  end
+
   test "#parse error" do
     rsp = """
       <ErrorResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">

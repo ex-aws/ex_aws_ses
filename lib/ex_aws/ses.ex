@@ -46,6 +46,42 @@ defmodule ExAws.SES do
     request(:list_configuration_sets, params)
   end
 
+  ## Templates
+  ######################
+
+  @doc """
+  Create an email template.
+  """
+  @type create_template_opt :: {:configuration_set_name, String.t()}
+  @spec create_template(binary, binary, binary, binary, opts :: [create_template_opt]) :: ExAws.Operation.Query.t()
+  def create_template(template_name, subject, html, text, opts \\ []) do
+    template = %{
+      "TemplateName" => template_name,
+      "SubjectPart" => subject,
+      "HtmlPart" => html,
+      "TextPart" => text
+    }
+
+    params =
+      opts
+      |> build_opts([:configuration_set_name])
+      |> Map.merge(flatten_attrs(template, "Template"))
+
+    request(:create_template, params)
+  end
+
+  @doc """
+  Delete an email template.
+  """
+  @spec delete_template(binary) :: ExAws.Operation.Query.t()
+  def delete_template(template_name) do
+    params = %{
+      "TemplateName" => template_name
+    }
+
+    request(:delete_template, params)
+  end
+
   ## Emails
   ######################
 
