@@ -249,7 +249,7 @@ defmodule ExAws.SES do
   defp format_bulk_destinations(destinations) do
     destinations
     |> Enum.with_index(1)
-    |> Enum.map(fn
+    |> Enum.flat_map(fn
       {%{destination: destination} = destination_member, index} ->
         root = "Destinations.member.#{index}"
 
@@ -258,7 +258,6 @@ defmodule ExAws.SES do
         |> add_replacement_template_data(destination_member, root)
         |> Map.to_list()
     end)
-    |> List.flatten()
     |> Map.new()
   end
 
