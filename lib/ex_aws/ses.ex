@@ -93,6 +93,8 @@ defmodule ExAws.SES do
         }
   @type destination :: %{to: [email_address], cc: [email_address], bcc: [email_address]}
 
+  @type bulk_destination :: [%{destination: destination, replacement_template_data: binary}]
+
   @type send_email_opt ::
           {:configuration_set_name, String.t()}
           | {:reply_to, [email_address]}
@@ -107,14 +109,6 @@ defmodule ExAws.SES do
   @spec send_email(dst :: destination, msg :: message, src :: binary, opts :: [send_email_opt]) ::
           ExAws.Operation.Query.t()
   def send_email(dst, msg, src, opts \\ []) do
-    dst =
-      Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
-        case Map.fetch(dst, key) do
-          {:ok, val} -> Map.put(acc, :"#{key}_addresses", val)
-          _ -> acc
-        end
-      end)
-
     params =
       opts
       |> build_opts([:configuration_set_name, :return_path, :return_path_arn, :source_arn, :bcc])
@@ -168,14 +162,6 @@ defmodule ExAws.SES do
           opts :: [send_templated_email_opt]
         ) :: ExAws.Operation.Query.t()
   def send_templated_email(dst, src, template, template_data, opts \\ []) do
-    dst =
-      Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
-        case Map.fetch(dst, key) do
-          {:ok, val} -> Map.put(acc, :"#{key}_addresses", val)
-          _ -> acc
-        end
-      end)
-
     params =
       opts
       |> build_opts([:configuration_set_name, :return_path, :return_path_arn, :source_arn, :bcc])
@@ -187,6 +173,36 @@ defmodule ExAws.SES do
       |> Map.put_new("TemplateData", template_data)
 
     request(:send_templated_email, params)
+  end
+
+  @doc """
+  Send a templated email to multiple destinations.
+  """
+  @type send_bulk_templated_email_opt ::
+          {:configuration_set_name, String.t()}
+          | {:return_path, String.t()}
+          | {:return_path_arn, String.t()}
+          | {:source_arn, String.t()}
+          | {:default_template_data, String.t()}
+          | {:tags, %{(String.t() | atom) => String.t()}}
+
+  @spec send_bulk_templated_email(
+          template :: binary,
+          source :: binary,
+          destinations :: bulk_destination,
+          opts :: [send_bulk_templated_email_opt]
+        ) :: ExAws.Operation.Query.t()
+  def send_bulk_templated_email(template, source, destinations, opts \\ []) do
+    params =
+      opts
+      |> build_opts([:configuration_set_name, :return_path, :return_path_arn, :source_arn, :default_template_data])
+      |> Map.merge(format_tags(opts[:tags]))
+      |> Map.merge(format_bulk_destinations(destinations))
+      |> Map.put_new("DefaultTemplateData", format_default_template_data(opts[:default_template_data]))
+      |> Map.put_new("Source", source)
+      |> Map.put_new("Template", template)
+
+    request(:send_bulk_templated_email, params)
   end
 
   @doc "Deletes the specified identity (an email address or a domain) from the list of verified identities."
@@ -248,12 +264,45 @@ defmodule ExAws.SES do
     )
   end
 
-  defp format_dst(dst) do
+  defp format_dst(dst, root \\ "destination") do
+    dst = Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
+      case Map.fetch(dst, key) do
+        {:ok, val} -> Map.put(acc, :"#{key}_addresses", val)
+        _ -> acc
+      end
+    end)
+
     dst
     |> Map.to_list()
     |> format_member_attributes([:bcc_addresses, :cc_addresses, :to_addresses])
-    |> flatten_attrs("destination")
+    |> flatten_attrs(root)
   end
+
+  defp format_default_template_data(nil), do: "{}"
+
+  defp format_default_template_data(default_template_data), do: default_template_data
+
+  defp format_bulk_destinations(destinations) do
+    destinations
+    |> Enum.with_index(1)
+    |> Enum.flat_map(fn
+      {%{destination: destination} = destination_member, index} ->
+        root = "Destinations.member.#{index}"
+
+        destination
+        |> format_dst("#{root}.Destination")
+        |> add_replacement_template_data(destination_member, root)
+        |> Map.to_list()
+    end)
+    |> Map.new()
+  end
+
+  defp add_replacement_template_data(destination, %{replacement_template_data: replacement_template_data}, root) do
+    destination
+    |> Map.put("#{root}.ReplacementTemplateData", replacement_template_data)
+  end
+
+  defp add_replacement_template_data(destination, _, _), do: destination
 
   defp format_tags(nil), do: %{}
 
