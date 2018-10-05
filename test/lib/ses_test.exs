@@ -297,6 +297,22 @@ defmodule ExAws.SESTest do
       assert expected == SES.create_template(templateName, subject, html, text).params
     end
 
+    test "without text part" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
+
+      expected = %{
+        "Action" => "CreateTemplate",
+        "Template.TemplateName" => templateName,
+        "Template.SubjectPart" => subject,
+        "Template.HtmlPart" => html
+      }
+
+      assert expected == SES.create_template(templateName, subject, html, nil).params
+    end
+
     test "with all optional params" do
       templateName = "MyTemplate"
       subject = "Greetings, {{name}}!"
