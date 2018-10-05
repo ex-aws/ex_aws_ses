@@ -57,15 +57,16 @@ defmodule ExAws.SES do
   def create_template(template_name, subject, html, text, opts \\ []) do
     template = %{
       "TemplateName" => template_name,
-      "SubjectPart" => subject,
-      "HtmlPart" => html,
-      "TextPart" => text
+      "SubjectPart" => subject
     }
+    |> put_not_nil("HtmlPart", html)
+    |> put_not_nil("TextPart", text)
+    |> flatten_attrs("Template")
 
     params =
       opts
       |> build_opts([:configuration_set_name])
-      |> Map.merge(flatten_attrs(template, "Template"))
+      |> Map.merge(template)
 
     request(:create_template, params)
   end
@@ -372,4 +373,7 @@ defmodule ExAws.SES do
   defp do_flatten_attrs({val, path}) do
     {camelize_key(path), val}
   end
+
+  defp put_not_nil(map, _, nil), do: map
+  defp put_not_nil(map, key, value), do: map |> Map.put(key, value)
 end
