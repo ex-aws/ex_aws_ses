@@ -59,8 +59,8 @@ defmodule ExAws.SES do
       "TemplateName" => template_name,
       "SubjectPart" => subject
     }
-    |> put_not_nil("HtmlPart", html)
-    |> put_not_nil("TextPart", text)
+    |> put_if_not_nil("HtmlPart", html)
+    |> put_if_not_nil("TextPart", text)
     |> flatten_attrs("Template")
 
     params =
@@ -374,6 +374,6 @@ defmodule ExAws.SES do
     {camelize_key(path), val}
   end
 
-  defp put_not_nil(map, _, nil), do: map
-  defp put_not_nil(map, key, value), do: map |> Map.put(key, value)
+  defp put_if_not_nil(map, _, nil), do: map
+  defp put_if_not_nil(map, key, value), do: map |> Map.put(key, value)
 end
