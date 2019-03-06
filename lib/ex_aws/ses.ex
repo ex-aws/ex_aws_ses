@@ -46,6 +46,14 @@ defmodule ExAws.SES do
     request(:list_configuration_sets, params)
   end
 
+  @type list_custom_verification_email_templates_opt :: {:max_results, pos_integer} | {:next_token, String.t()}
+  @doc "Lists the existing custom verification email templates for your account in the current AWS Region."
+  @spec list_custom_verification_email_templates(opts :: [] | [list_custom_verification_email_templates_opt]) :: ExAws.Operation.Query.t()
+  def list_custom_verification_email_templates(opts \\ []) do
+    params = build_opts(opts, [:max_results, :next_token])
+    request(:list_custom_verification_email_templates, params)
+  end
+
   ## Emails
   ######################
 
