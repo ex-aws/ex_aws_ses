@@ -153,6 +153,21 @@ defmodule ExAws.SES do
     request(:send_templated_email, params)
   end
 
+  @doc """
+  Adds an email address to the list of identities for your Amazon SES account in the current AWS Region and attempts to verify it.
+  As a result of executing this operation, a customized verification email is sent to the specified address.
+  """
+  @type send_custom_verification_email_opt :: {:configuration_set_name, String.t()}
+  @spec send_custom_verification_email(email_address :: email_address, template_name :: binary, opts :: [send_custom_verification_email_opt] | []) :: ExAws.Operation.Query.t()
+  def send_custom_verification_email(email_address, template_name, opts \\ []) do
+    params =
+      opts
+      |> build_opts([:configuration_set_name])
+      |> Map.put_new("EmailAddress", email_address)
+      |> Map.put_new("TemplateName", template_name)
+    request(:send_custom_verification_email, params)
+  end
+
   @doc "Deletes the specified identity (an email address or a domain) from the list of verified identities."
   @spec delete_identity(binary) :: ExAws.Operation.Query.t()
   def delete_identity(identity) do
