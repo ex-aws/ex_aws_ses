@@ -169,9 +169,9 @@ defmodule ExAws.SES do
       |> Map.merge(format_member_attribute(:reply_to_addresses, opts[:reply_to]))
       |> Map.merge(format_tags(opts[:tags]))
       |> Map.merge(format_dst(dst))
-      |> Map.put_new("Source", src)
-      |> Map.put_new("Template", template)
-      |> Map.put_new("TemplateData", template_data)
+      |> Map.put("Source", src)
+      |> Map.put("Template", template)
+      |> Map.put("TemplateData", format_template_data(template_data))
 
     request(:send_templated_email, params)
   end
@@ -199,9 +199,9 @@ defmodule ExAws.SES do
       |> build_opts([:configuration_set_name, :return_path, :return_path_arn, :source_arn, :default_template_data])
       |> Map.merge(format_tags(opts[:tags]))
       |> Map.merge(format_bulk_destinations(destinations))
-      |> Map.put_new("DefaultTemplateData", format_default_template_data(opts[:default_template_data]))
-      |> Map.put_new("Source", source)
-      |> Map.put_new("Template", template)
+      |> Map.put("DefaultTemplateData", format_template_data(opts[:default_template_data]) )
+      |> Map.put("Source", source)
+      |> Map.put("Template", template)
 
     request(:send_bulk_templated_email, params)
   end
@@ -279,9 +279,9 @@ defmodule ExAws.SES do
     |> flatten_attrs(root)
   end
 
-  defp format_default_template_data(nil), do: "{}"
+  defp format_template_data(nil), do: "{}"
 
-  defp format_default_template_data(default_template_data), do: default_template_data
+  defp format_template_data(template_data), do: template_data |> Poison.encode!()
 
   defp format_bulk_destinations(destinations) do
     destinations
@@ -300,7 +300,7 @@ defmodule ExAws.SES do
 
   defp add_replacement_template_data(destination, %{replacement_template_data: replacement_template_data}, root) do
     destination
-    |> Map.put("#{root}.ReplacementTemplateData", replacement_template_data)
+    |> Map.put("#{root}.ReplacementTemplateData", format_template_data(replacement_template_data))
   end
 
   defp add_replacement_template_data(destination, _, _), do: destination
