@@ -281,7 +281,7 @@ defmodule ExAws.SES do
 
   defp format_template_data(nil), do: "{}"
 
-  defp format_template_data(template_data), do: template_data |> Poison.encode!()
+  defp format_template_data(template_data), do: Poison.encode!(template_data)
 
   defp format_bulk_destinations(destinations) do
     destinations
