@@ -301,7 +301,6 @@ defmodule ExAws.SESTest do
       templateName = "MyTemplate"
       subject = "Greetings, {{name}}!"
       html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
-      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
 
       expected = %{
         "Action" => "CreateTemplate",
