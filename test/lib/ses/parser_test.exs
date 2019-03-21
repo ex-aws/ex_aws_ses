@@ -136,6 +136,41 @@ defmodule ExAws.SES.ParserTest do
     }
   end
 
+
+  test "#parse send_bulk_templated_email" do
+    rsp =
+      """
+      <SendBulkTemplatedEmailResponse xmlns=\"http://ses.amazonaws.com/doc/2010-12-01/\">
+        <SendBulkTemplatedEmailResult>
+          <Status>
+            <member>
+              <MessageId>110000663377dd66-44ffaaaa-11bb-44dd-aa77-998899883388-000000</MessageId>
+              <Status>Success</Status>
+            </member>
+            <member>
+              <MessageId>110000663377dd66-778888dd-cc99-44aa-aa99-bbdd99ddff88-000000</MessageId>
+              <Status>Success</Status>
+            </member>
+          </Status>
+        </SendBulkTemplatedEmailResult>
+        <ResponseMetadata>
+          <RequestId>22ff88dd-cc11-11ee-99bb-5599ee1144dd</RequestId>
+        </ResponseMetadata>
+      </SendBulkTemplatedEmailResponse>"
+      """
+      |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :send_bulk_templated_email)
+
+    assert parsed_doc == %{
+             request_id: "22ff88dd-cc11-11ee-99bb-5599ee1144dd",
+             messages: [
+               %{message_id: "110000663377dd66-44ffaaaa-11bb-44dd-aa77-998899883388-000000", status: "Success"},
+               %{message_id: "110000663377dd66-778888dd-cc99-44aa-aa99-bbdd99ddff88-000000", status: "Success"}
+             ]
+           }
+  end
+
   test "#parse a delete_identity response" do
     rsp = """
       <DeleteIdentityResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">
@@ -198,6 +233,36 @@ defmodule ExAws.SES.ParserTest do
 
     {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :set_identity_headers_in_notifications_enabled)
     assert parsed_doc == %{request_id: "01b49b78-30ca-11e7-948a-399bafb173a2"}
+  end
+
+  test "#parse create_template" do
+    rsp = """
+          <CreateTemplateResponse xmlns=\"http://ses.amazonaws.com/doc/2010-12-01/\">
+            <CreateTemplateResult/>
+            <ResponseMetadata>
+              <RequestId>9876defg-c666-111e-88aa-ee8833eeffaa</RequestId>
+            </ResponseMetadata>
+          </CreateTemplateResponse>
+          """
+          |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :create_template)
+    assert parsed_doc == %{request_id: "9876defg-c666-111e-88aa-ee8833eeffaa"}
+  end
+
+  test "#parse delete_template" do
+    rsp = """
+          <DeleteTemplateResponse xmlns=\"http://ses.amazonaws.com/doc/2010-12-01/\">
+            <DeleteTemplateResult/>
+              <ResponseMetadata>
+                <RequestId>12345abcd-c666-111e-88aa-cc8899bb1177</RequestId>
+              </ResponseMetadata>
+          </DeleteTemplateResponse>
+          """
+          |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :delete_template)
+    assert parsed_doc == %{request_id: "12345abcd-c666-111e-88aa-cc8899bb1177"}
   end
 
   test "#parse error" do
