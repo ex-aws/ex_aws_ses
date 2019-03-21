@@ -60,6 +60,21 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    def parse({:ok, %{body: xml} = resp}, :send_bulk_templated_email) do
+      parsed_body =
+        xml
+        |> SweetXml.xmap(
+             messages: [
+               ~x[//SendBulkTemplatedEmailResponse/SendBulkTemplatedEmailResult/Status/member]l,
+               message_id: ~x"./MessageId/text()"s,
+               status: ~x"./Status/text()"s
+             ],
+             request_id: request_id_xpath()
+           )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
     def parse({:ok, %{body: xml}=resp}, :delete_identity) do
       parsed_body = SweetXml.xpath(xml, ~x"//DeleteIdentityResponse", request_id: request_id_xpath())
 
@@ -84,6 +99,18 @@ if Code.ensure_loaded?(SweetXml) do
       parsed_body = SweetXml.xpath(
         xml, ~x"//SetIdentityHeadersInNotificationsEnabledResponse", request_id: request_id_xpath()
       )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :create_template) do
+      parsed_body = SweetXml.xpath(xml, ~x"//CreateTemplateResponse", request_id: request_id_xpath())
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :delete_template) do
+      parsed_body = SweetXml.xpath(xml, ~x"//DeleteTemplateResponse", request_id: request_id_xpath())
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end

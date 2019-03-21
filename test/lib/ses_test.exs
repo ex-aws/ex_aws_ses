@@ -11,6 +11,7 @@ defmodule ExAws.SESTest do
     assert expected == SES.verify_email_identity(ctx.email).params
   end
 
+  @tag :integration
   test "#verify_email_identity request" do
     resp = SES.verify_email_identity("success@simulator.amazonses.com") |> ExAws.request
     assert {:ok, %{body: %{request_id: _}}} = resp
@@ -90,11 +91,11 @@ defmodule ExAws.SESTest do
     test "with required params only" do
       dst =  %{to:  ["success@simulator.amazonses.com"]}
       src = "user@example.com"
-      template_data = %{data1: "data1", data2: "data2"} |> Poison.encode!()
+      template_data = %{data1: "data1", data2: "data2"}
 
       expected = %{
         "Action" => "SendTemplatedEmail", "Destination.ToAddresses.member.1" => "success@simulator.amazonses.com",
-        "Template" => "my_template", "Source" => "user@example.com", "TemplateData" => template_data
+        "Template" => "my_template", "Source" => "user@example.com", "TemplateData" => Poison.encode!(template_data)
       }
 
       assert expected == SES.send_templated_email(dst, src, "my_template", template_data).params
@@ -108,7 +109,7 @@ defmodule ExAws.SESTest do
       }
       
       src = "user@example.com"
-      template_data = %{data1: "data1", data2: "data2"} |> Poison.encode!()
+      template_data = %{data1: "data1", data2: "data2"}
 
       expected = %{
         "Action" => "SendTemplatedEmail", "ConfigurationSetName" => "test",
@@ -123,7 +124,7 @@ defmodule ExAws.SESTest do
         "SourceArn" => "east-1:123456789012:identity/example.com",
         "Tags.member.1.Name" => "tag1", "Tags.member.1.Value" => "tag1value1",
         "Tags.member.2.Name" => "tag2", "Tags.member.2.Value" => "tag2value1",
-        "Template" => "my_template", "TemplateData" => template_data
+        "Template" => "my_template", "TemplateData" => Poison.encode!(template_data)
       }
 
       assert expected == SES.send_templated_email(
@@ -133,6 +134,101 @@ defmodule ExAws.SESTest do
         reply_to: ["user@example.com", "user1@example.com"],
         tags:  [%{name: "tag1", value: "tag1value1"}, %{name: "tag2", value: "tag2value1"}]
       ).params
+    end
+  end
+
+  describe "#send_bulk_templated_email" do
+    test "with required params only" do
+      template = "my_template"
+      source = "user@example.com"
+
+      replacement_template_data1 = %{data1: "value1"}
+      replacement_template_data2 = %{data1: "value2"}
+
+      destinations = [
+        %{destination: %{to: ["email1@email.com", "email2@email.com"]}, replacement_template_data: replacement_template_data1},
+        %{
+          destination: %{to: ["email3@email.com"], cc: ["email4@email.com", "email5@email.com"], bcc: ["email6@email.com", "email7@email.com"]},
+          replacement_template_data: replacement_template_data2
+        },
+        %{destination: %{to: ["email8@email.com"]}}
+      ]
+
+      expected = %{
+        "Action" => "SendBulkTemplatedEmail",
+        "Template" => "my_template",
+        "Source" => "user@example.com",
+        "Destinations.member.1.Destination.ToAddresses.member.1" => "email1@email.com",
+        "Destinations.member.1.Destination.ToAddresses.member.2" => "email2@email.com",
+        "Destinations.member.1.ReplacementTemplateData" => Poison.encode!(replacement_template_data1),
+        "Destinations.member.2.Destination.ToAddresses.member.1" => "email3@email.com",
+        "Destinations.member.2.Destination.CcAddresses.member.1" => "email4@email.com",
+        "Destinations.member.2.Destination.CcAddresses.member.2" => "email5@email.com",
+        "Destinations.member.2.Destination.BccAddresses.member.1" => "email6@email.com",
+        "Destinations.member.2.Destination.BccAddresses.member.2" => "email7@email.com",
+        "Destinations.member.2.ReplacementTemplateData" => Poison.encode!(replacement_template_data2),
+        "Destinations.member.3.Destination.ToAddresses.member.1" => "email8@email.com",
+        "DefaultTemplateData" => "{}"
+      }
+
+      assert expected == SES.send_bulk_templated_email(template, source, destinations).params
+    end
+
+    test "with all optional params" do
+      template = "my_template"
+      source = "user@example.com"
+
+      replacement_template_data1 = %{data1: "value1"}
+      replacement_template_data2 = %{data1: "value2"}
+      default_template_data = %{data1: "DefaultValue"}
+
+      destinations = [
+        %{destination: %{to: ["email1@email.com", "email2@email.com"]}, replacement_template_data: replacement_template_data1},
+        %{
+          destination: %{to: ["email3@email.com"], cc: ["email4@email.com", "email5@email.com"], bcc: ["email6@email.com", "email7@email.com"]},
+          replacement_template_data: replacement_template_data2
+        },
+        %{destination: %{to: ["email8@email.com"]}}
+      ]
+
+      expected = %{
+        "Action" => "SendBulkTemplatedEmail",
+        "ConfigurationSetName" => "test",
+        "Template" => "my_template",
+        "Source" => "user@example.com",
+        "Destinations.member.1.Destination.ToAddresses.member.1" => "email1@email.com",
+        "Destinations.member.1.Destination.ToAddresses.member.2" => "email2@email.com",
+        "Destinations.member.1.ReplacementTemplateData" => Poison.encode!(replacement_template_data1),
+        "Destinations.member.2.Destination.ToAddresses.member.1" => "email3@email.com",
+        "Destinations.member.2.Destination.CcAddresses.member.1" => "email4@email.com",
+        "Destinations.member.2.Destination.CcAddresses.member.2" => "email5@email.com",
+        "Destinations.member.2.Destination.BccAddresses.member.1" => "email6@email.com",
+        "Destinations.member.2.Destination.BccAddresses.member.2" => "email7@email.com",
+        "Destinations.member.2.ReplacementTemplateData" => Poison.encode!(replacement_template_data2),
+        "Destinations.member.3.Destination.ToAddresses.member.1" => "email8@email.com",
+        "DefaultTemplateData" => Poison.encode!(default_template_data),
+        "ReturnPath" => "feedback@example.com",
+        "ReturnPathArn" => "arn:aws:ses:us-east-1:123456789012:identity/example.com",
+        "SourceArn" => "east-1:123456789012:identity/example.com",
+        "Tags.member.1.Name" => "tag1",
+        "Tags.member.1.Value" => "tag1value1",
+        "Tags.member.2.Name" => "tag2",
+        "Tags.member.2.Value" => "tag2value1",
+      }
+
+      assert expected ==
+               SES.send_bulk_templated_email(
+                 template,
+                 source,
+                 destinations,
+                 default_template_data: default_template_data,
+                 configuration_set_name: "test",
+                 return_path: "feedback@example.com",
+                 return_path_arn: "arn:aws:ses:us-east-1:123456789012:identity/example.com",
+                 source_arn: "east-1:123456789012:identity/example.com",
+                 reply_to: ["user@example.com", "user1@example.com"],
+                 tags: [%{name: "tag1", value: "tag1value1"}, %{name: "tag2", value: "tag2value1"}]
+               ).params
     end
   end
 
@@ -183,4 +279,67 @@ defmodule ExAws.SESTest do
     assert expected == SES.set_identity_headers_in_notifications_enabled(ctx.email, :delivery, enabled).params
   end
 
+
+  describe "#create_template" do
+    test "with required params only" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
+
+      expected = %{
+        "Action" => "CreateTemplate",
+        "Template.TemplateName" => templateName,
+        "Template.SubjectPart" => subject,
+        "Template.HtmlPart" => html,
+        "Template.TextPart" => text
+      }
+
+      assert expected == SES.create_template(templateName, subject, html, text).params
+    end
+
+    test "without text part" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+
+      expected = %{
+        "Action" => "CreateTemplate",
+        "Template.TemplateName" => templateName,
+        "Template.SubjectPart" => subject,
+        "Template.HtmlPart" => html
+      }
+
+      assert expected == SES.create_template(templateName, subject, html, nil).params
+    end
+
+    test "with all optional params" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
+
+      expected = %{
+        "Action" => "CreateTemplate",
+        "Template.TemplateName" => templateName,
+        "Template.SubjectPart" => subject,
+        "Template.HtmlPart" => html,
+        "Template.TextPart" => text,
+        "ConfigurationSetName" => "test"
+      }
+
+      assert expected == SES.create_template(templateName, subject, html, text, configuration_set_name: "test").params
+    end
+  end
+
+  test "#delete_template" do
+    templateName = "MyTemplate"
+
+    expected = %{
+      "Action" => "DeleteTemplate",
+      "TemplateName" => templateName
+    }
+
+    assert expected == SES.delete_template(templateName).params
+  end
 end
