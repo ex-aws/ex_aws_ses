@@ -207,6 +207,7 @@ defmodule ExAws.SESTest do
         "Destinations.member.2.ReplacementTemplateData" => Poison.encode!(replacement_template_data2),
         "Destinations.member.3.Destination.ToAddresses.member.1" => "email8@email.com",
         "DefaultTemplateData" => Poison.encode!(default_template_data),
+        "ReplyToAddresses.member.1" => "user@example.com", "ReplyToAddresses.member.2" => "user1@example.com",
         "ReturnPath" => "feedback@example.com",
         "ReturnPathArn" => "arn:aws:ses:us-east-1:123456789012:identity/example.com",
         "SourceArn" => "east-1:123456789012:identity/example.com",
