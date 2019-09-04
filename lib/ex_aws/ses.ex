@@ -153,6 +153,7 @@ defmodule ExAws.SES do
           | {:return_path_arn, String.t()}
           | {:source, String.t()}
           | {:source_arn, String.t()}
+          | {:reply_to, [email_address]}
           | {:tags, %{(String.t() | atom) => String.t()}}
 
   @spec send_templated_email(
@@ -185,6 +186,7 @@ defmodule ExAws.SES do
           | {:return_path_arn, String.t()}
           | {:source_arn, String.t()}
           | {:default_template_data, String.t()}
+          | {:reply_to, [email_address]}
           | {:tags, %{(String.t() | atom) => String.t()}}
 
   @spec send_bulk_templated_email(
@@ -197,6 +199,7 @@ defmodule ExAws.SES do
     params =
       opts
       |> build_opts([:configuration_set_name, :return_path, :return_path_arn, :source_arn, :default_template_data])
+      |> Map.merge(format_member_attribute(:reply_to_addresses, opts[:reply_to]))
       |> Map.merge(format_tags(opts[:tags]))
       |> Map.merge(format_bulk_destinations(destinations))
       |> Map.put("DefaultTemplateData", format_template_data(opts[:default_template_data]) )
