@@ -1,3 +1,7 @@
+v2.1.1
+  - Added support of `ReplyToAddresses.member.N` option for `send_bulk_templated_email  `[SendBulkTemplatedEmail](https://docs.aws.amazon.com/ses/latest/APIReference/API_SendBulkTemplatedEmail.html) action by @flyrboy96
+  - Spec improvements by @flyrboy96
+
 v2.1.0
   - Added support for [CreateTemplate](https://docs.aws.amazon.com/ses/latest/APIReference/API_CreateTemplate.html) action by @themerch
   - Added support for [DeleteTemplate](hhttps://docs.aws.amazon.com/ses/latest/APIReference/API_DeleteTemplate.html) action by @themerch
