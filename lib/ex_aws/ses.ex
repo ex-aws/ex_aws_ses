@@ -8,6 +8,7 @@ defmodule ExAws.SES do
   """
 
   @notification_types [:bounce, :complaint, :delivery]
+  @service :ses
 
   @doc "Verifies an email address"
   @spec verify_email_identity(email :: binary) :: ExAws.Operation.Query.t()
@@ -284,7 +285,8 @@ defmodule ExAws.SES do
 
   defp format_template_data(nil), do: "{}"
 
-  defp format_template_data(template_data), do: Poison.encode!(template_data)
+  defp format_template_data(template_data), do:
+    Map.get(aws_base_config(), :json_codec).encode!(template_data)
 
   defp format_bulk_destinations(destinations) do
     destinations
@@ -328,7 +330,7 @@ defmodule ExAws.SES do
     %ExAws.Operation.Query{
       path: "/",
       params: params |> Map.put("Action", action_string),
-      service: :ses,
+      service: @service,
       action: action,
       parser: &ExAws.SES.Parsers.parse/2
     }
@@ -379,4 +381,6 @@ defmodule ExAws.SES do
 
   defp put_if_not_nil(map, _, nil), do: map
   defp put_if_not_nil(map, key, value), do: map |> Map.put(key, value)
+
+  defp aws_base_config(), do: ExAws.Config.build_base(@service)
 end
