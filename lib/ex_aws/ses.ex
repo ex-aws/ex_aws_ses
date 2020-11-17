@@ -138,7 +138,7 @@ defmodule ExAws.SES do
   def send_raw_email(raw_msg, opts \\ []) do
     params =
       opts
-      |> camelize_keys
+      |> build_opts([:configuration_set_name, :from_arn, :return_path_arn, :source, :source_arn])
       |> Map.merge(format_tags(opts[:tags]))
       |> Map.put("RawMessage.Data", Base.encode64(raw_msg))
 

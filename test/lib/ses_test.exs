@@ -87,6 +87,47 @@ defmodule ExAws.SESTest do
     end
   end
 
+  describe "#send_raw_email" do
+    setup do
+      %{
+        raw_email: "To: alice@example.com\r\nSubject: =?utf-8?Q?Welcome to the app.?=\r\nReply-To: chuck@example.com\r\nMime-Version: 1.0\r\nFrom: bob@example.com\r\nContent-Type: multipart/alternative; boundary=\"9081958709C029F90BFFF130\"\r\nCc: john@example.com\r\nBcc: jane@example.com\r\n\r\n--9081958709C029F90BFFF130\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nThanks for joining!\r\n\r\n--9081958709C029F90BFFF130\r\nContent-Type: text/html\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n<strong>Thanks for joining!</strong>\r\n--9081958709C029F90BFFF130--",
+        raw_email_data: "VG86IGFsaWNlQGV4YW1wbGUuY29tDQpTdWJqZWN0OiA9P3V0Zi04P1E/V2VsY29tZSB0byB0aGUgYXBwLj89DQpSZXBseS1UbzogY2h1Y2tAZXhhbXBsZS5jb20NCk1pbWUtVmVyc2lvbjogMS4wDQpGcm9tOiBib2JAZXhhbXBsZS5jb20NCkNvbnRlbnQtVHlwZTogbXVsdGlwYXJ0L2FsdGVybmF0aXZlOyBib3VuZGFyeT0iOTA4MTk1ODcwOUMwMjlGOTBCRkZGMTMwIg0KQ2M6IGpvaG5AZXhhbXBsZS5jb20NCkJjYzogamFuZUBleGFtcGxlLmNvbQ0KDQotLTkwODE5NTg3MDlDMDI5RjkwQkZGRjEzMA0KQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluDQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiBxdW90ZWQtcHJpbnRhYmxlDQoNClRoYW5rcyBmb3Igam9pbmluZyENCg0KLS05MDgxOTU4NzA5QzAyOUY5MEJGRkYxMzANCkNvbnRlbnQtVHlwZTogdGV4dC9odG1sDQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiBxdW90ZWQtcHJpbnRhYmxlDQoNCjxzdHJvbmc+VGhhbmtzIGZvciBqb2luaW5nITwvc3Ryb25nPg0KLS05MDgxOTU4NzA5QzAyOUY5MEJGRkYxMzAtLQ=="
+      }
+    end
+
+    test "with required params only", %{raw_email: msg, raw_email_data: data} do
+      expected = %{
+        "Action" => "SendRawEmail",
+        "RawMessage.Data" => data
+      }
+
+      assert expected == SES.send_raw_email(msg).params
+    end
+
+    test "with all optional params", %{raw_email: msg, raw_email_data: data} do
+      expected = %{
+        "Action" => "SendRawEmail",
+        "ConfigurationSetName" => "test",
+        "FromArn" => "east-1:123456789012:identity/example.com",
+        "ReturnPathArn" => "arn:aws:ses:us-east-1:123456789012:identity/example.com",
+        "Source" => "bob@example.com",
+        "SourceArn" => "east-1:123456789012:identity/example.com",
+        "Tags.member.1.Name" => "tag1", "Tags.member.1.Value" => "tag1value1",
+        "Tags.member.2.Name" => "tag2", "Tags.member.2.Value" => "tag2value1",
+        "RawMessage.Data" => data,
+      }
+
+      assert expected == SES.send_raw_email(msg,
+        configuration_set_name: "test",
+        from_arn: "east-1:123456789012:identity/example.com",
+        return_path_arn: "arn:aws:ses:us-east-1:123456789012:identity/example.com",
+        source: "bob@example.com",
+        source_arn: "east-1:123456789012:identity/example.com",
+        tags:  [%{name: "tag1", value: "tag1value1"}, %{name: "tag2", value: "tag2value1"}]
+      ).params
+    end
+  end
+
   describe "#send_templated_email" do
     test "with required params only" do
       dst =  %{to:  ["success@simulator.amazonses.com"]}
