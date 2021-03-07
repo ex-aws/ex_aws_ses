@@ -148,7 +148,7 @@ defmodule ExAws.SESTest do
         cc:  ["success@simulator.amazonses.com"],
         to:  ["success@simulator.amazonses.com", "bounce@simulator.amazonses.com"]
       }
-      
+
       src = "user@example.com"
       template_data = %{data1: "data1", data2: "data2"}
 
@@ -322,6 +322,24 @@ defmodule ExAws.SESTest do
   end
 
 
+  test "#get_template" do
+    templateName = "MyTemplate"
+    expected = %{
+      "Action" => "GetTemplate",
+      "TemplateName" => templateName
+    }
+    assert expected == SES.get_template(templateName).params
+  end
+
+  test "#list_templates" do
+    expected = %{
+      "Action" => "ListTemplates",
+      "MaxItems" => 1,
+      "NextToken" => "QUFBQUF"
+    }
+    assert expected == SES.list_templates(max_items: 1, next_token: "QUFBQUF").params
+  end
+
   describe "#create_template" do
     test "with required params only" do
       templateName = "MyTemplate"
@@ -371,6 +389,58 @@ defmodule ExAws.SESTest do
       }
 
       assert expected == SES.create_template(templateName, subject, html, text, configuration_set_name: "test").params
+    end
+  end
+
+  describe "#update_template" do
+    test "with required params only" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
+
+      expected = %{
+        "Action" => "UpdateTemplate",
+        "Template.TemplateName" => templateName,
+        "Template.SubjectPart" => subject,
+        "Template.HtmlPart" => html,
+        "Template.TextPart" => text
+      }
+
+      assert expected == SES.update_template(templateName, subject, html, text).params
+    end
+
+    test "without text part" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+
+      expected = %{
+        "Action" => "UpdateTemplate",
+        "Template.TemplateName" => templateName,
+        "Template.SubjectPart" => subject,
+        "Template.HtmlPart" => html
+      }
+
+      assert expected == SES.update_template(templateName, subject, html, nil).params
+    end
+
+    test "with all optional params" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
+
+      expected = %{
+        "Action" => "UpdateTemplate",
+        "Template.TemplateName" => templateName,
+        "Template.SubjectPart" => subject,
+        "Template.HtmlPart" => html,
+        "Template.TextPart" => text,
+        "ConfigurationSetName" => "test"
+      }
+
+      assert expected == SES.update_template(templateName, subject, html, text, configuration_set_name: "test").params
     end
   end
 

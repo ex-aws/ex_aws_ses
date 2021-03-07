@@ -96,9 +96,9 @@ defmodule ExAws.SES do
   @spec update_template(String.t(), String.t(), String.t(), String.t(), opts :: [update_template_opt]) :: ExAws.Operation.Query.t()
   def update_template(template_name, subject, html, text, opts \\ []) do
     template = %{
-      "TemplateName" => template_name
+      "TemplateName" => template_name,
+      "SubjectPart" => subject
     }
-    |> put_if_not_nil("SubjectPart", subject)
     |> put_if_not_nil("HtmlPart", html)
     |> put_if_not_nil("TextPart", text)
     |> flatten_attrs("Template")
