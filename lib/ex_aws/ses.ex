@@ -50,6 +50,17 @@ defmodule ExAws.SES do
   ## Templates
   ######################
 
+  @type list_templates_opt ::
+          {:max_items, pos_integer}
+          | {:next_token, String.t()}
+
+  @doc "List email templates"
+  @spec list_templates(opts :: [] | [list_templates_opt]) :: ExAws.Operation.Query.t()
+  def list_templates(opts \\ []) do
+    params = build_opts(opts, [:max_items, :next_token])
+    request(:list_templates, params)
+  end
+
   @doc """
   Create an email template.
   """
