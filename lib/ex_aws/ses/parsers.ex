@@ -40,6 +40,16 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    # AWS SES returns empty 200 response
+    def parse({:ok, _resp}, :create_contact_list), do: {:ok, nil}
+
+    def parse({:ok, %{body: xml}=resp}, :create_contact) do
+      parsed_body = xml
+      |> SweetXml.xpath()
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
     def parse({:ok, %{body: xml}=resp}, :send_email) do
       parsed_body = xml
       |> SweetXml.xpath(~x"//SendEmailResponse",

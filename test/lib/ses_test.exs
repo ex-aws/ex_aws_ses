@@ -2,6 +2,8 @@ defmodule ExAws.SESTest do
   use ExUnit.Case, async: true
   alias ExAws.SES
 
+  @list_name "test_list"
+
   setup_all do
     {:ok, email: "user@example.com"}
   end
@@ -37,6 +39,206 @@ defmodule ExAws.SESTest do
 
     expected = %{"Action" => "ListIdentities", "MaxItems" => 1, "NextToken" => "QUFBQUF"}
     assert expected == SES.list_identities(max_items: 1, next_token: "QUFBQUF").params
+  end
+
+  describe "contact lists" do
+    test "#create_contact_list" do
+      tag = %{Key: "environment", Value: "test"}
+      expected_data = %{
+        "ContactListName" => @test_list,
+        "Tags" => [%{Key: "environment", Value: "test"}]
+      }
+      operation = SES.create_contact_list(@list_name, formatted_tags: [tag])
+
+      assert operation.http_method == :post
+      assert operation.path == "/v2/email/contact-lists"
+      assert operation.data == expected_data
+    end
+
+    test "#update_contact_list" do
+      description = "test description"
+      topic = %{TopicName: "test_topic", DisplayName: "test", DefaultSubscriptionStatus: "OPT_OUT"}
+      expected_data = %{
+        "ContactListName" => @list_name,
+        "Description" => description,
+        "Topics" => [topic]
+      }
+      operation = SES.update_contact_list(@list_name, description: description, topics: [topic])
+
+      assert operation.http_method == :put
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}"
+      assert operation.data == expected_data
+    end
+
+    test "#list_contact_lists" do
+      operation = SES.list_contact_lists()
+
+      assert operation.http_method == :get
+      assert operation.path == "/v2/email/contact-lists"
+    end
+
+    test "#get_contact_list" do
+      operation = SES.get_contact_list(@list_name)
+
+      assert operation.http_method == :get
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}"
+    end
+
+    test "#delete_contact_list" do
+      operation = SES.delete_contact_list(@list_name)
+
+      assert operation.http_method == :delete
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}"
+    end
+  end
+
+  describe "contacts" do
+    test "#create_contact" do
+      email = "test@example.com"
+      topic = %{TopicName: "test_topic", SubscriptionStatus: "OPT_IN"}
+      attributes = "test attribute"
+      unsubscribe = false
+      expected_data = %{
+        "EmailAddress" => email,
+        "TopicPreferences" => [topic],
+        "AttributesData" => attributes,
+        "UnsubscribeAll" => unsubscribe
+      }
+      operation = SES.create_contact(
+        @list_name,
+        email,
+        attributes: attributes,
+        topic_preferences: [topic],
+        unsubscribe_all: unsubscribe
+      )
+
+      assert operation.http_method == :post
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts"
+      assert operation.data == expected_data
+    end
+
+    test "#update_contact" do
+      email = "test@example.com"
+      topic = %{TopicName: "test_topic", SubscriptionStatus: "OPT_IN"}
+      attributes = "test attribute"
+      unsubscribe = false
+      expected_data = %{
+        "TopicPreferences" => [topic],
+        "AttributesData" => attributes,
+        "UnsubscribeAll" => unsubscribe
+      }
+
+      operation = SES.update_contact(
+        @list_name,
+        email,
+        attributes: attributes,
+        topic_preferences: [topic],
+        unsubscribe_all: unsubscribe
+      )
+
+      assert operation.http_method == :post
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts"
+      assert operation.data == expected_data
+    end
+
+    test "#list_contacts" do
+      operation = SES.list_contacts(@list_name)
+
+      assert operation.http_method == :get
+      assert operation.path = "/v2/email/contact-lists/#{@list_name}/contacts"
+    end
+
+    test "#get_contact" do
+      email = "test@example.com"
+      operation = SES.get_contact(@list_name, email)
+
+      assert operation.http_method == :get
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{email}"
+    end
+
+    test "#delete_contact" do
+      email = "test@example.com"
+      operation = SES.delete_contact(@list_name, email)
+
+      assert operation.http_method == :delete
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{email}"
+    end
+  end
+
+  describe "v2 API send_email" do
+    destination = %{
+      ToAddresses: ["test1@example.com"],
+      CcAddresses: ["test2@example.com"],
+      BccAddresses: ["test3@example.com"]
+    }
+    from_email = "test@example.com"
+    tag = %{Key: "environment", Value: "test"}
+    list_management = %{
+      ContactListName: @list_name,
+      TopicName: "test_topic"
+    }
+
+    test "simple html" do
+      content = %{
+        Simple: %{
+          Body: %{
+            Html: %{
+              Data: "<html><body>test email via elixir ses</body></html>"
+            }
+          },
+          Subject: %{Data: "test email via elixir ses"}
+        }
+      }
+      expected_data = %{
+        Content: content,
+        Destination: destination,
+        EmailTags: [tag],
+        FromEmailAddress: from_email,
+        ListManagementOptions: list_management,
+      }
+      operation = SES.send_email_v2(
+        destination,
+        content,
+        from_email,
+        tags: [tag],
+        list_management: list_management
+      )
+
+      assert operation.http_method == :post
+      assert operation.path == "v2/email/outbound-emails"
+      assert operation.data == expected_data
+    end
+
+    test "simple text" do
+      content = %{
+        Simple: %{
+          Body: %{
+            Text: %{
+              Data: "test email via elixir ses"
+            }
+          },
+          Subject: %{Data: "test email via elixir ses"}
+        }
+      }
+      expected_data = %{
+        Content: content,
+        Destination: destination,
+        EmailTags: [tag],
+        FromEmailAddress: from_email,
+        ListManagementOptions: list_management,
+      }
+      operation = SES.send_email_v2(
+        destination,
+        content,
+        from_email,
+        tags: [tag],
+        list_management: list_management
+      )
+
+      assert operation.http_method == :post
+      assert operation.path == "v2/email/outbound-emails"
+      assert operation.data == expected_data
+    end
   end
 
   describe "#send_email" do
@@ -148,7 +350,7 @@ defmodule ExAws.SESTest do
         cc:  ["success@simulator.amazonses.com"],
         to:  ["success@simulator.amazonses.com", "bounce@simulator.amazonses.com"]
       }
-      
+
       src = "user@example.com"
       template_data = %{data1: "data1", data2: "data2"}
 

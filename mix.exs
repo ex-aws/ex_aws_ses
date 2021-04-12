@@ -48,6 +48,8 @@ defmodule ExAws.SES.Mixfile do
       {:poison, ">= 0.0.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.19", only: [:dev, :test]},
+      # @todo elimate this
+      {:jason, "~> 1.0"},
       ex_aws()
     ]
   end
