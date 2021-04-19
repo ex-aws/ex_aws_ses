@@ -62,7 +62,7 @@ defmodule ExAws.SES do
   ExAws.SES.create_contact_list(
     "Test list",
     "Test description",
-    formatted_tags: [%{"Key" => "environment", "Value" => "test"}],
+    tags: [%{"Key" => "environment", "Value" => "test"}],
     topics: [
       %{
         "TopicName": "test_topic"
@@ -211,7 +211,7 @@ defmodule ExAws.SES do
   @doc """
   Delete a contact in a contact list.
   """
-  @spec delete_contact(String.t(), String.t()) :: ExAws.Operation.JSON.t()
+  @spec delete_contact(String.t(), email_address) :: ExAws.Operation.JSON.t()
   def delete_contact(list_name, email) do
     request_v2(:delete, "contact-lists/#{list_name}/contacts/#{email}")
   end
