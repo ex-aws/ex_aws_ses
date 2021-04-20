@@ -5,7 +5,17 @@ defmodule ExAws.SESTest do
   @list_name "test_list"
 
   setup_all do
-    {:ok, email: "user@example.com"}
+    {:ok,
+      email: "user@example.com",
+      tag: %{Key: "environment", Value: "test"},
+      topic: %{TopicName: "test_topic", SubscriptionStatus: "OPT_IN"},
+      list_management: %{ContactListName: @list_name, TopicName: "test_topic"},
+      destination: %{
+        ToAddresses: ["test1@example.com"],
+        CcAddresses: ["test2@example.com"],
+        BccAddresses: ["test3@example.com"]
+      }
+    }
   end
 
   test "#verify_email_identity", ctx do
@@ -45,10 +55,10 @@ defmodule ExAws.SESTest do
     test "#create_contact_list" do
       tag = %{Key: "environment", Value: "test"}
       expected_data = %{
-        "ContactListName" => @test_list,
+        "ContactListName" => @list_name,
         "Tags" => [%{Key: "environment", Value: "test"}]
       }
-      operation = SES.create_contact_list(@list_name, formatted_tags: [tag])
+      operation = SES.create_contact_list(@list_name, tags: [tag])
 
       assert operation.http_method == :post
       assert operation.path == "/v2/email/contact-lists"
@@ -89,6 +99,20 @@ defmodule ExAws.SESTest do
 
       assert operation.http_method == :delete
       assert operation.path == "/v2/email/contact-lists/#{@list_name}"
+    end
+
+    test "#create_import_job" do
+      source = %{DataFormat: "CSV", S3Url: "s3://test_bucket/test_object.csv"}
+      destination = %{ContactListDestination: %{ContactListImportAction: "PUT", ContactListName: @list_name}}
+      expected_data = data = %{
+        ImportDataSource: source,
+        ImportDestination: destination
+      }
+      operation = SES.create_import_job(source, destination)
+
+      assert operation.http_method == :post
+      assert operation.path == "/v2/email/import-jobs"
+      assert operation.data == expected_data
     end
   end
 
@@ -136,8 +160,8 @@ defmodule ExAws.SESTest do
         unsubscribe_all: unsubscribe
       )
 
-      assert operation.http_method == :post
-      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts"
+      assert operation.http_method == :put
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{email}"
       assert operation.data == expected_data
     end
 
@@ -145,7 +169,7 @@ defmodule ExAws.SESTest do
       operation = SES.list_contacts(@list_name)
 
       assert operation.http_method == :get
-      assert operation.path = "/v2/email/contact-lists/#{@list_name}/contacts"
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts"
     end
 
     test "#get_contact" do
@@ -166,19 +190,7 @@ defmodule ExAws.SESTest do
   end
 
   describe "v2 API send_email" do
-    destination = %{
-      ToAddresses: ["test1@example.com"],
-      CcAddresses: ["test2@example.com"],
-      BccAddresses: ["test3@example.com"]
-    }
-    from_email = "test@example.com"
-    tag = %{Key: "environment", Value: "test"}
-    list_management = %{
-      ContactListName: @list_name,
-      TopicName: "test_topic"
-    }
-
-    test "simple html" do
+    test "simple html", context do
       content = %{
         Simple: %{
           Body: %{
@@ -191,25 +203,25 @@ defmodule ExAws.SESTest do
       }
       expected_data = %{
         Content: content,
-        Destination: destination,
-        EmailTags: [tag],
-        FromEmailAddress: from_email,
-        ListManagementOptions: list_management,
+        Destination: context[:destination],
+        EmailTags: [context[:tag]],
+        FromEmailAddress: context[:email],
+        ListManagementOptions: context[:list_management],
       }
       operation = SES.send_email_v2(
-        destination,
+        context[:destination],
         content,
-        from_email,
-        tags: [tag],
-        list_management: list_management
+        context[:email],
+        tags: [context[:tag]],
+        list_management: context[:list_management]
       )
 
       assert operation.http_method == :post
-      assert operation.path == "v2/email/outbound-emails"
+      assert operation.path == "/v2/email/outbound-emails"
       assert operation.data == expected_data
     end
 
-    test "simple text" do
+    test "simple text", context do
       content = %{
         Simple: %{
           Body: %{
@@ -222,21 +234,21 @@ defmodule ExAws.SESTest do
       }
       expected_data = %{
         Content: content,
-        Destination: destination,
-        EmailTags: [tag],
-        FromEmailAddress: from_email,
-        ListManagementOptions: list_management,
+        Destination: context[:destination],
+        EmailTags: [context[:tag]],
+        FromEmailAddress: context[:email],
+        ListManagementOptions: context[:list_management],
       }
       operation = SES.send_email_v2(
-        destination,
+        context[:destination],
         content,
-        from_email,
-        tags: [tag],
-        list_management: list_management
+        context[:email],
+        tags: [context[:tag]],
+        list_management: context[:list_management]
       )
 
       assert operation.http_method == :post
-      assert operation.path == "v2/email/outbound-emails"
+      assert operation.path == "/v2/email/outbound-emails"
       assert operation.data == expected_data
     end
   end

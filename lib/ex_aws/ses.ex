@@ -216,6 +216,35 @@ defmodule ExAws.SES do
     request_v2(:delete, "contact-lists/#{list_name}/contacts/#{email}")
   end
 
+  @doc """
+  Create a bulk import job to import contacts from S3.
+
+  Params:
+  * import_data_source
+  * `import_destination`: requires either a `ContactListDestination` or `SuppressionListDestination` map.
+  """
+  @type import_data_source :: %{DataFormat: String.t(), S3Url: String.t()}
+  @type contact_list_destination :: %{
+    ContactListImportAction: String.t(),
+    ContactListName: String.t()
+  }
+  @type suppression_list_destination :: %{SuppressionListImportAction: String.t()}
+  @type import_destination :: %{
+    optional(:ContactListDestination) => contact_list_destination(),
+    optional(:SuppressionListDestination) => suppression_list_destination()
+
+  }
+  @spec create_import_job(import_data_source(), import_destination()) :: ExAws.Operation.JSON.t()
+  def create_import_job(data_source, destination) do
+    data = %{
+      ImportDataSource: data_source,
+      ImportDestination: destination
+    }
+
+    request_v2(:post, "import-jobs")
+    |> Map.put(:data, data)
+  end
+
   ## Templates
   ######################
 
