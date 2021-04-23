@@ -1,3 +1,7 @@
+v2.2.0
+  - Add CRUD actions on contact list and contact resources by j4p3 
+  - Add v2 API's send email endpoint by j4p3 
+  
 v2.1.1
   - Added support of `ReplyToAddresses.member.N` option to [SendBulkTemplatedEmail](https://docs.aws.amazon.com/ses/latest/APIReference/API_SendBulkTemplatedEmail.html) action by @flyrboy96
   - Spec improvements by @flyrboy96
