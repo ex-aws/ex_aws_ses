@@ -9,6 +9,7 @@ defmodule ExAws.SES do
 
   @notification_types [:bounce, :complaint, :delivery]
   @service :ses
+  @v2_path "/v2/email"
 
   @doc "Verifies an email address"
   @spec verify_email_identity(email :: binary) :: ExAws.Operation.Query.t()
@@ -20,6 +21,9 @@ defmodule ExAws.SES do
           {:max_items, pos_integer}
           | {:next_token, String.t()}
           | {:identity_type, String.t()}
+
+  @type tag :: %{Key: String.t(), Value: String.t()}
+  @type list_topic :: %{String.t() => String.t()}
 
   @doc "List identities associated with the AWS account"
   @spec list_identities(opts :: [] | [list_identities_opt]) :: ExAws.Operation.Query.t()
@@ -47,6 +51,200 @@ defmodule ExAws.SES do
     request(:list_configuration_sets, params)
   end
 
+  ## Contact lists
+  ######################
+
+  @doc """
+  Create a contact list via the SES V2 API (https://docs.aws.amazon.com/ses/latest/APIReference-V2/).
+
+  Example:
+
+  ExAws.SES.create_contact_list(
+    "Test list",
+    "Test description",
+    tags: [%{"Key" => "environment", "Value" => "test"}],
+    topics: [
+      %{
+        "TopicName": "test_topic"
+        "DisplayName": "Test topic",
+        "Description": "Test discription",
+        "DefaultSubscriptionStatus": "OPT_IN",
+      }
+   ]
+  )
+  """
+  @type create_contact_list_opt ::
+          {:description, String.t()}
+          | {:tags, [tag]}
+          | {:topics, [%{(String.t() | atom) => String.t()}]}
+  @spec create_contact_list(String.t(), opts :: [create_contact_list_opt]) ::
+          ExAws.Operation.JSON.t()
+  def create_contact_list(list_name, opts \\ []) do
+    data =
+      prune_map(%{
+        "ContactListName" => list_name,
+        "Description" => opts[:description],
+        "Tags" => opts[:tags],
+        "Topics" => opts[:topics]
+      })
+
+    request_v2(:post, "contact-lists")
+    |> Map.put(:data, data)
+  end
+
+  @doc """
+  Update a contact list. Only accepts description and topic updates.
+
+  Example:
+
+  ExAws.SES.update_contact_list("test_list", description: "New description")
+  """
+  @type topic :: %{
+          required(:DefaultSubscriptionStatus) => String.t(),
+          optional(:Description) => String.t(),
+          required(:DisplayName) => String.t(),
+          required(:TopicName) => String.t()
+        }
+  @type update_contact_list_opt ::
+          {:description, String.t()}
+          | {:topics, [topic]}
+  @spec update_contact_list(String.t(), opts :: [update_contact_list_opt]) :: ExAws.Operation.JSON.t()
+  def update_contact_list(list_name, opts \\ []) do
+    data = prune_map(%{
+      "ContactListName" => list_name,
+      "Description" => opts[:description],
+      "Topics" => opts[:topics]
+    })
+
+    request_v2(:put, "contact-lists/#{list_name}")
+    |> Map.put(:data, data)
+  end
+
+  @doc """
+  List contact lists. The API accepts pagination parameters, but they're redundant as AWS limits usage to a single list per account.
+  """
+  @spec list_contact_lists() :: ExAws.Operation.JSON.t()
+  def list_contact_lists() do
+    request_v2(:get, "contact-lists")
+  end
+
+  @doc """
+  Show contact list.
+  """
+  @spec get_contact_list(String.t()) :: ExAws.Operation.JSON.t()
+  def get_contact_list(list_name) do
+    request_v2(:get, "contact-lists/#{list_name}")
+  end
+
+  @doc """
+  Delete contact list.
+  """
+  @spec delete_contact_list(String.t()) :: ExAws.Operation.JSON.t()
+  def delete_contact_list(list_name) do
+    request_v2(:delete, "contact-lists/#{list_name}")
+  end
+
+  ## Contacts
+  ######################
+
+  @doc """
+  Create a new contact in a contact list.
+
+  Options:
+
+  * attributes: arbitrary string to be assigned to AWS SES Contact AttributesData
+  * topic_preferences: list of maps for subscriptions to topics. SubscriptionStatus should be one of "OPT_IN" or "OPT_OUT".
+  * unsubscribe_all: causes contact to be unsubscribed from all topics
+  """
+  @type topic_preference :: %{
+          TopicName: String.t(),
+          SubscriptionStatus: String.t()
+        }
+  @type contact_opt ::
+          {:attributes, String.t()}
+          | {:topic_preferences, [topic_preference]}
+          | {:unsubscribe_all, Boolean.t()}
+  @spec create_contact(String.t(), email_address, [contact_opt]) :: ExAws.Operation.JSON.t()
+  def create_contact(list_name, email, opts \\ []) do
+    data = prune_map(%{
+      "EmailAddress" => email,
+      "TopicPreferences" => opts[:topic_preferences],
+      "AttributesData" => opts[:attributes],
+      "UnsubscribeAll" => opts[:unsubscribe_all]
+    })
+
+    request_v2(:post, "contact-lists/#{list_name}/contacts")
+    |> Map.put(:data, data)
+  end
+
+  @doc """
+  Update a contact in a contact list.
+  """
+  @spec update_contact(String.t(), email_address, [contact_opt]) :: ExAws.Operation.JSON.t()
+  def update_contact(list_name, email, opts \\ []) do
+    data = prune_map(%{
+      "TopicPreferences" => opts[:topic_preferences],
+      "AttributesData" => opts[:attributes],
+      "UnsubscribeAll" => opts[:unsubscribe_all]
+    })
+
+    request_v2(:put, "contact-lists/#{list_name}/contacts/#{email}")
+    |> Map.put(:data, data)
+  end
+
+  @doc """
+  Show contacts in contact list.
+  """
+  @spec list_contacts(String.t()) :: ExAws.Operation.JSON.t()
+  def list_contacts(list_name) do
+    request_v2(:get, "contact-lists/#{list_name}/contacts")
+  end
+
+  @doc """
+  Show a contact in a contact list.
+  """
+  @spec get_contact(String.t(), email_address) :: ExAws.Operation.JSON.t()
+  def get_contact(list_name, email) do
+    request_v2(:get, "contact-lists/#{list_name}/contacts/#{email}")
+  end
+
+  @doc """
+  Delete a contact in a contact list.
+  """
+  @spec delete_contact(String.t(), email_address) :: ExAws.Operation.JSON.t()
+  def delete_contact(list_name, email) do
+    request_v2(:delete, "contact-lists/#{list_name}/contacts/#{email}")
+  end
+
+  @doc """
+  Create a bulk import job to import contacts from S3.
+
+  Params:
+  * import_data_source
+  * `import_destination`: requires either a `ContactListDestination` or `SuppressionListDestination` map.
+  """
+  @type import_data_source :: %{DataFormat: String.t(), S3Url: String.t()}
+  @type contact_list_destination :: %{
+    ContactListImportAction: String.t(),
+    ContactListName: String.t()
+  }
+  @type suppression_list_destination :: %{SuppressionListImportAction: String.t()}
+  @type import_destination :: %{
+    optional(:ContactListDestination) => contact_list_destination(),
+    optional(:SuppressionListDestination) => suppression_list_destination()
+
+  }
+  @spec create_import_job(import_data_source(), import_destination()) :: ExAws.Operation.JSON.t()
+  def create_import_job(data_source, destination) do
+    data = %{
+      ImportDataSource: data_source,
+      ImportDestination: destination
+    }
+
+    request_v2(:post, "import-jobs")
+    |> Map.put(:data, data)
+  end
+
   ## Templates
   ######################
 
@@ -56,13 +254,14 @@ defmodule ExAws.SES do
   @type create_template_opt :: {:configuration_set_name, String.t()}
   @spec create_template(binary, binary, binary, binary, opts :: [create_template_opt]) :: ExAws.Operation.Query.t()
   def create_template(template_name, subject, html, text, opts \\ []) do
-    template = %{
-      "TemplateName" => template_name,
-      "SubjectPart" => subject
-    }
-    |> put_if_not_nil("HtmlPart", html)
-    |> put_if_not_nil("TextPart", text)
-    |> flatten_attrs("Template")
+    template =
+      %{
+        "TemplateName" => template_name,
+        "SubjectPart" => subject
+      }
+      |> put_if_not_nil("HtmlPart", html)
+      |> put_if_not_nil("TextPart", text)
+      |> flatten_attrs("Template")
 
     params =
       opts
@@ -121,6 +320,51 @@ defmodule ExAws.SES do
       |> Map.put_new("Source", src)
 
     request(:send_email, params)
+  end
+
+  @doc """
+  Send an email via the SES V2 API, which supports list management.
+
+  `content` should include one of a `Raw`, `Simple`, or `Template` key.
+  """
+  @type destination_v2 :: %{
+          optional(:ToAddresses) => [email_address],
+          optional(:CcAddresses) => [email_address],
+          optional(:BccAddresses) => [email_address]
+        }
+  @type email_field :: %{optional(:Charset) => String.t(), required(:Data) => String.t()}
+  @type email_content :: %{
+          optional(:Raw) => %{Data: binary},
+          optional(:Simple) => %{Body: %{Html: email_field, Text: email_field}, Subject: email_field},
+          optional(:Template) => %{TemplateArn: String.t(), TemplateData: String.t(), TemplateName: String.t()}
+        }
+  @type(
+    send_email_v2_opt ::
+      {:configuration_set_name, String.t()}
+      | {:tags, [tag]}
+      | {:feedback_forwarding_address, String.t()}
+      | {:feedback_forwarding_arn, String.t()}
+      | {:from_arn, String.t()}
+      | {:list_management, %{ContactListName: String.t(), TopicName: String.t()}}
+      | {:reply_addresses, [String.t()]},
+    @spec(send_email_v2(destination_v2, email_content, email_address, [send_email_v2_opt]))
+  )
+  def send_email_v2(destination, content, from_email, opts \\ []) do
+    data = prune_map(%{
+      ConfigurationSetName: opts[:configuration_set_name],
+      Content: content,
+      Destination: destination,
+      EmailTags: opts[:tags],
+      FeedbackForwardingEmailAddress: opts[:feedback_forwarding_address],
+      FeedbackForwardingEmailAddressIdentityArn: opts[:feedback_forwarding_arn],
+      FromEmailAddress: from_email,
+      FromEmailAddressIdentityArn: opts[:from_arn],
+      ListManagementOptions: opts[:list_management],
+      ReplyToAddresses: opts[:reply_addresses]
+    })
+
+    request_v2(:post, "outbound-emails")
+    |> Map.put(:data, data)
   end
 
   @doc """
@@ -203,7 +447,7 @@ defmodule ExAws.SES do
       |> Map.merge(format_member_attribute(:reply_to_addresses, opts[:reply_to]))
       |> Map.merge(format_tags(opts[:tags]))
       |> Map.merge(format_bulk_destinations(destinations))
-      |> Map.put("DefaultTemplateData", format_template_data(opts[:default_template_data]) )
+      |> Map.put("DefaultTemplateData", format_template_data(opts[:default_template_data]))
       |> Map.put("Source", source)
       |> Map.put("Template", template)
 
@@ -270,12 +514,13 @@ defmodule ExAws.SES do
   end
 
   defp format_dst(dst, root \\ "destination") do
-    dst = Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
-      case Map.fetch(dst, key) do
-        {:ok, val} -> Map.put(acc, :"#{key}_addresses", val)
-        _ -> acc
-      end
-    end)
+    dst =
+      Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
+        case Map.fetch(dst, key) do
+          {:ok, val} -> Map.put(acc, :"#{key}_addresses", val)
+          _ -> acc
+        end
+      end)
 
     dst
     |> Map.to_list()
@@ -285,8 +530,7 @@ defmodule ExAws.SES do
 
   defp format_template_data(nil), do: "{}"
 
-  defp format_template_data(template_data), do:
-    Map.get(aws_base_config(), :json_codec).encode!(template_data)
+  defp format_template_data(template_data), do: Map.get(aws_base_config(), :json_codec).encode!(template_data)
 
   defp format_bulk_destinations(destinations) do
     destinations
@@ -336,6 +580,19 @@ defmodule ExAws.SES do
     }
   end
 
+  defp request_v2(method) do
+    %ExAws.Operation.JSON{
+      http_method: method,
+      path: @v2_path,
+      service: @service
+    }
+  end
+
+  defp request_v2(method, resource) do
+    request_v2(method)
+    |> Map.put(:path, @v2_path <> "/#{resource}")
+  end
+
   defp build_opts(opts, permitted) do
     opts
     |> Map.new()
@@ -383,4 +640,10 @@ defmodule ExAws.SES do
   defp put_if_not_nil(map, key, value), do: map |> Map.put(key, value)
 
   defp aws_base_config(), do: ExAws.Config.build_base(@service)
+
+  defp prune_map(map) do
+    map
+    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Map.new()
+  end
 end
