@@ -248,11 +248,28 @@ defmodule ExAws.SES do
   ## Templates
   ######################
 
+  @doc "Get email template"
+  @spec get_template(String.t()) :: ExAws.Operation.Query.t()
+  def get_template(template_name) do
+    request(:get_template, %{"TemplateName" => template_name})
+  end
+
+  @type list_templates_opt ::
+          {:max_items, pos_integer}
+          | {:next_token, String.t()}
+
+  @doc "List email templates"
+  @spec list_templates(opts :: [] | [list_templates_opt]) :: ExAws.Operation.Query.t()
+  def list_templates(opts \\ []) do
+    params = build_opts(opts, [:max_items, :next_token])
+    request(:list_templates, params)
+  end
+
   @doc """
   Create an email template.
   """
   @type create_template_opt :: {:configuration_set_name, String.t()}
-  @spec create_template(binary, binary, binary, binary, opts :: [create_template_opt]) :: ExAws.Operation.Query.t()
+  @spec create_template(String.t(), String.t(), String.t(), String.t(), opts :: [create_template_opt]) :: ExAws.Operation.Query.t()
   def create_template(template_name, subject, html, text, opts \\ []) do
     template =
       %{
@@ -271,6 +288,27 @@ defmodule ExAws.SES do
     request(:create_template, params)
   end
 
+  @doc """
+  Update an email template.
+  """
+  @type update_template_opt :: {:configuration_set_name, String.t()}
+  @spec update_template(String.t(), String.t(), String.t(), String.t(), opts :: [update_template_opt]) :: ExAws.Operation.Query.t()
+  def update_template(template_name, subject, html, text, opts \\ []) do
+    template = %{
+      "TemplateName" => template_name,
+      "SubjectPart" => subject
+    }
+    |> put_if_not_nil("HtmlPart", html)
+    |> put_if_not_nil("TextPart", text)
+    |> flatten_attrs("Template")
+
+    params =
+      opts
+      |> build_opts([:configuration_set_name])
+      |> Map.merge(template)
+
+    request(:update_template, params)
+  end
   @doc """
   Delete an email template.
   """
