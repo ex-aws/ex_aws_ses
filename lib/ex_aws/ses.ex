@@ -551,6 +551,87 @@ defmodule ExAws.SES do
     )
   end
 
+  @doc "Create a custom verification email template."
+  @spec create_custom_verification_email_template(
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t()
+        ) :: ExAws.Operation.Query.t()
+  def create_custom_verification_email_template(
+        template_name,
+        from_email_address,
+        template_subject,
+        template_content,
+        success_redirection_url,
+        failure_redirection_url
+      ) do
+    request(:create_custom_verification_email_template, %{
+      "TemplateName" => template_name,
+      "FromEmailAddress" => from_email_address,
+      "TemplateSubject" => template_subject,
+      "TemplateContent" => template_content,
+      "SuccessRedirectionURL" => success_redirection_url,
+      "FailureRedirectionURL" => failure_redirection_url
+    })
+  end
+
+  @type update_custom_verification_email_template_opt ::
+          {:template_name, String.t()}
+          | {:from_email_address, String.t()}
+          | {:template_subject, String.t()}
+          | {:template_content, String.t()}
+          | {:success_redirection_url, String.t()}
+          | {:failure_redirection_url, String.t()}
+  @doc "Update or create a custom verification email template."
+  @spec update_custom_verification_email_template(opts :: [update_custom_verification_email_template_opt] | []) ::
+          ExAws.Operation.Query.t()
+  def update_custom_verification_email_template(opts \\ []) do
+    params =
+      opts
+      |> build_opts([
+        :template_name,
+        :from_email_address,
+        :template_subject,
+        :template_content
+      ])
+      |> maybe_put_param(opts, :success_redirection_url, "SuccessRedirectionURL")
+      |> maybe_put_param(opts, :failure_redirection_url, "FailureRedirectionURL")
+
+    request(:update_custom_verification_email_template, params)
+  end
+
+  @doc "Delete custom verification email template."
+  @spec delete_custom_verification_email_template(String.t()) :: ExAws.Operation.Query.t()
+  def delete_custom_verification_email_template(template_name) do
+    request(:delete_custom_verification_email_template, %{"TemplateName" => template_name})
+  end
+
+  @type list_custom_verification_email_templates_opt :: {:max_results, String.t()} | {:next_token, String.t()}
+  @doc "Lists custom verification email templates."
+  @spec list_custom_verification_email_templates(opts :: [list_custom_verification_email_templates_opt()] | []) ::
+          ExAws.Operation.Query.t()
+  def list_custom_verification_email_templates(opts \\ []) do
+    params = build_opts(opts, [:max_results, :next_token])
+    request(:list_custom_verification_email_templates, params)
+  end
+
+  @type send_custom_verification_email_opt :: {:configuration_set_name, String.t()}
+  @doc "Send a verification email using a custom template."
+  @spec send_custom_verification_email(String.t(), String.t(), opts :: [send_custom_verification_email_opt] | []) ::
+          ExAws.Operation.Query.t()
+  def send_custom_verification_email(email_address, template_name, opts \\ []) do
+    params =
+      opts
+      |> build_opts([:configuration_set_name])
+      |> Map.put("EmailAddress", email_address)
+      |> Map.put("TemplateName", template_name)
+
+    request(:send_custom_verification_email, params)
+  end
+
   defp format_dst(dst, root \\ "destination") do
     dst =
       Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
@@ -636,6 +717,13 @@ defmodule ExAws.SES do
     |> Map.new()
     |> Map.take(permitted)
     |> camelize_keys
+  end
+
+  defp maybe_put_param(params, opts, key, name) do
+    case opts[key] do
+      nil -> params
+      value -> Map.put(params, name, value)
+    end
   end
 
   defp format_member_attributes(opts, members) do

@@ -668,4 +668,91 @@ defmodule ExAws.SESTest do
 
     assert expected == SES.delete_template(templateName).params
   end
+
+  test "#create custom email verification template" do
+    template_name = "MyTemplate"
+    from_email_address = "test@example.com"
+    template_subject = "Verified with ExAWS!"
+    template_content = "This is some custom content"
+    success_redirection_url = "https://example.com/success"
+    failure_redirection_url = "https://example.com/failure"
+
+    expected = %{
+      "Action" => "CreateCustomVerificationEmailTemplate",
+      "TemplateName" => template_name,
+      "FromEmailAddress" => from_email_address,
+      "TemplateSubject" => template_subject,
+      "TemplateContent" => template_content,
+      "SuccessRedirectionURL" => success_redirection_url,
+      "FailureRedirectionURL" => failure_redirection_url
+    }
+
+    assert expected == SES.create_custom_verification_email_template(template_name, from_email_address, template_subject, template_content, success_redirection_url, failure_redirection_url).params
+  end
+
+  test "#update custom email verification template" do
+    template_name = "MyTemplate"
+    from_email_address = "test@example.com"
+    template_subject = "Verified with ExAWS!"
+    template_content = "This is some custom content"
+    success_redirection_url = "https://example.com/success"
+    failure_redirection_url = "https://example.com/failure"
+
+    expected = %{
+      "Action" => "UpdateCustomVerificationEmailTemplate",
+      "TemplateName" => template_name,
+      "FromEmailAddress" => from_email_address,
+      "TemplateSubject" => template_subject,
+      "TemplateContent" => template_content,
+      "SuccessRedirectionURL" => success_redirection_url,
+      "FailureRedirectionURL" => failure_redirection_url
+    }
+
+    assert expected == SES.update_custom_verification_email_template(
+      template_name: template_name,
+      from_email_address: from_email_address,
+      template_subject: template_subject,
+      template_content: template_content,
+      success_redirection_url: success_redirection_url,
+      failure_redirection_url: failure_redirection_url).params
+  end
+
+  test "#delete custom email verification template" do
+    template_name = "MyTemplate"
+
+    expected = %{
+      "Action" => "DeleteCustomVerificationEmailTemplate",
+      "TemplateName" => template_name
+    }
+
+    assert expected == SES.delete_custom_verification_email_template(template_name).params
+  end
+
+  test "#list custom verification email templates" do
+    max_results = 25
+    next_token = "token"
+
+    expected = %{
+      "Action" => "ListCustomVerificationEmailTemplates",
+      "MaxResults" => max_results,
+      "NextToken" => next_token
+    }
+
+    assert expected == SES.list_custom_verification_email_templates(max_results: max_results, next_token: next_token).params
+  end
+
+  test "#send verification email with custom template" do
+    template_name = "MyTemplate"
+      email_address = "test@example.com"
+      configuration_set_name = "MyConfigurationSet"
+
+      expected = %{
+        "Action" => "SendCustomVerificationEmail",
+        "TemplateName" => template_name,
+        "EmailAddress" => email_address,
+        "ConfigurationSetName" => configuration_set_name
+      }
+
+      assert expected == SES.send_custom_verification_email(email_address, template_name, configuration_set_name: configuration_set_name).params
+  end
 end
