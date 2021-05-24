@@ -2,16 +2,18 @@ defmodule ExAws.SES do
   import ExAws.Utils, only: [camelize_key: 1, camelize_keys: 1]
 
   @moduledoc """
-  Operations on AWS SES
+  Operations on AWS SES.
 
-  http://docs.aws.amazon.com/ses/latest/APIReference/Welcome.html
+  See https://docs.aws.amazon.com/ses/latest/APIReference/Welcome.html
   """
 
   @notification_types [:bounce, :complaint, :delivery]
   @service :ses
   @v2_path "/v2/email"
 
-  @doc "Verifies an email address"
+  @doc """
+  Verifies an email address.
+  """
   @spec verify_email_identity(email :: binary) :: ExAws.Operation.Query.t()
   def verify_email_identity(email) do
     request(:verify_email_identity, %{"EmailAddress" => email})
@@ -32,7 +34,9 @@ defmodule ExAws.SES do
     request(:list_identities, params)
   end
 
-  @doc "Fetch identities verification status and token (for domains)"
+  @doc """
+  Fetch identities verification status and token (for domains).
+  """
   @spec get_identity_verification_attributes([binary]) :: ExAws.Operation.Query.t()
   def get_identity_verification_attributes(identities) when is_list(identities) do
     params = format_member_attribute({:identities, identities})
@@ -43,7 +47,9 @@ defmodule ExAws.SES do
           {:max_items, pos_integer}
           | {:next_token, String.t()}
 
-  @doc "Fetch configuration sets associated with AWS account"
+  @doc """
+  Fetch configuration sets associated with AWS account.
+  """
   @spec list_configuration_sets() :: ExAws.Operation.Query.t()
   @spec list_configuration_sets(opts :: [] | [list_configuration_sets_opt]) :: ExAws.Operation.Query.t()
   def list_configuration_sets(opts \\ []) do
@@ -55,23 +61,25 @@ defmodule ExAws.SES do
   ######################
 
   @doc """
-  Create a contact list via the SES V2 API (https://docs.aws.amazon.com/ses/latest/APIReference-V2/).
+  Create a contact list via the SES V2 API,
+  see (https://docs.aws.amazon.com/ses/latest/APIReference-V2/).
 
-  Example:
+  ## Examples
 
-  ExAws.SES.create_contact_list(
-    "Test list",
-    "Test description",
-    tags: [%{"Key" => "environment", "Value" => "test"}],
-    topics: [
-      %{
-        "TopicName": "test_topic"
-        "DisplayName": "Test topic",
-        "Description": "Test discription",
-        "DefaultSubscriptionStatus": "OPT_IN",
-      }
-   ]
-  )
+      ExAws.SES.create_contact_list(
+        "Test list",
+        "Test description",
+        tags: [%{"Key" => "environment", "Value" => "test"}],
+        topics: [
+          %{
+            "TopicName": "test_topic"
+            "DisplayName": "Test topic",
+            "Description": "Test discription",
+            "DefaultSubscriptionStatus": "OPT_IN",
+          }
+       ]
+      )
+
   """
   @type create_contact_list_opt ::
           {:description, String.t()}
@@ -95,9 +103,10 @@ defmodule ExAws.SES do
   @doc """
   Update a contact list. Only accepts description and topic updates.
 
-  Example:
+  ## Examples
 
-  ExAws.SES.update_contact_list("test_list", description: "New description")
+      ExAws.SES.update_contact_list("test_list", description: "New description")
+
   """
   @type topic :: %{
           required(:DefaultSubscriptionStatus) => String.t(),
@@ -121,7 +130,10 @@ defmodule ExAws.SES do
   end
 
   @doc """
-  List contact lists. The API accepts pagination parameters, but they're redundant as AWS limits usage to a single list per account.
+  List contact lists.
+
+  The API accepts pagination parameters, but they're redundant as AWS limits
+  usage to a single list per account.
   """
   @spec list_contact_lists() :: ExAws.Operation.JSON.t()
   def list_contact_lists() do
@@ -152,9 +164,10 @@ defmodule ExAws.SES do
 
   Options:
 
-  * attributes: arbitrary string to be assigned to AWS SES Contact AttributesData
-  * topic_preferences: list of maps for subscriptions to topics. SubscriptionStatus should be one of "OPT_IN" or "OPT_OUT".
-  * unsubscribe_all: causes contact to be unsubscribed from all topics
+  * `:attributes` - arbitrary string to be assigned to AWS SES Contact AttributesData
+  * `:topic_preferences` - list of maps for subscriptions to topics.
+    SubscriptionStatus should be one of "OPT_IN" or "OPT_OUT"
+  * `:unsubscribe_all` - causes contact to be unsubscribed from all topics
   """
   @type topic_preference :: %{
           TopicName: String.t(),
@@ -220,8 +233,10 @@ defmodule ExAws.SES do
   Create a bulk import job to import contacts from S3.
 
   Params:
-  * import_data_source
-  * `import_destination`: requires either a `ContactListDestination` or `SuppressionListDestination` map.
+
+  * `:import_data_source`
+  * `:import_destination` - requires either a `ContactListDestination` or
+    `SuppressionListDestination` map.
   """
   @type import_data_source :: %{DataFormat: String.t(), S3Url: String.t()}
   @type contact_list_destination :: %{
@@ -258,7 +273,9 @@ defmodule ExAws.SES do
           {:max_items, pos_integer}
           | {:next_token, String.t()}
 
-  @doc "List email templates"
+  @doc """
+  List email templates.
+  """
   @spec list_templates(opts :: [] | [list_templates_opt]) :: ExAws.Operation.Query.t()
   def list_templates(opts \\ []) do
     params = build_opts(opts, [:max_items, :next_token])
@@ -266,7 +283,7 @@ defmodule ExAws.SES do
   end
 
   @doc """
-  Create an email template.
+  Creates an email template.
   """
   @type create_template_opt :: {:configuration_set_name, String.t()}
   @spec create_template(String.t(), String.t(), String.t(), String.t(), opts :: [create_template_opt]) :: ExAws.Operation.Query.t()
@@ -289,7 +306,7 @@ defmodule ExAws.SES do
   end
 
   @doc """
-  Update an email template.
+  Updates an email template.
   """
   @type update_template_opt :: {:configuration_set_name, String.t()}
   @spec update_template(String.t(), String.t(), String.t(), String.t(), opts :: [update_template_opt]) :: ExAws.Operation.Query.t()
@@ -310,7 +327,7 @@ defmodule ExAws.SES do
     request(:update_template, params)
   end
   @doc """
-  Delete an email template.
+  Deletes an email template.
   """
   @spec delete_template(binary) :: ExAws.Operation.Query.t()
   def delete_template(template_name) do
@@ -343,7 +360,9 @@ defmodule ExAws.SES do
           | {:source_arn, String.t()}
           | {:tags, %{(String.t() | atom) => String.t()}}
 
-  @doc "Composes an email message"
+  @doc """
+  Composes an email message.
+  """
   @spec send_email(dst :: destination, msg :: message, src :: binary) :: ExAws.Operation.Query.t()
   @spec send_email(dst :: destination, msg :: message, src :: binary, opts :: [send_email_opt]) ::
           ExAws.Operation.Query.t()
@@ -363,7 +382,7 @@ defmodule ExAws.SES do
   @doc """
   Send an email via the SES V2 API, which supports list management.
 
-  `content` should include one of a `Raw`, `Simple`, or `Template` key.
+  `:content` should include one of a `Raw`, `Simple`, or `Template` key.
   """
   @type destination_v2 :: %{
           optional(:ToAddresses) => [email_address],
@@ -492,7 +511,10 @@ defmodule ExAws.SES do
     request(:send_bulk_templated_email, params)
   end
 
-  @doc "Deletes the specified identity (an email address or a domain) from the list of verified identities."
+  @doc """
+  Deletes the specified identity (an email address or a domain) from the list
+  of verified identities.
+  """
   @spec delete_identity(binary) :: ExAws.Operation.Query.t()
   def delete_identity(identity) do
     request(:delete_identity, %{"Identity" => identity})
@@ -502,11 +524,13 @@ defmodule ExAws.SES do
   @type notification_type :: :bounce | :complaint | :delivery
 
   @doc """
-  Sets the Amazon Simple Notification Service (Amazon SNS) topic to which Amazon SES will publish  delivery
-  notifications for emails sent with given identity.
-  Absent `sns_topic` options cleans SnsTopic and disables publishing.
+  Sets the Amazon Simple Notification Service (Amazon SNS) topic to which
+  Amazon SES will publish  delivery notifications for emails sent with given
+  identity.
 
-  Notification type can be on of the :bounce, :complaint or :delivery.
+  Absent `:sns_topic` options cleans SnsTopic and disables publishing.
+
+  Notification type can be on of the `:bounce`, `:complaint`, or `:delivery`.
   Requests are throttled to one per second.
   """
   @spec set_identity_notification_topic(binary, notification_type, set_identity_notification_topic_opt | []) ::
@@ -522,13 +546,17 @@ defmodule ExAws.SES do
     request(:set_identity_notification_topic, params)
   end
 
-  @doc "Enables or disables whether Amazon SES forwards notifications as email"
+  @doc """
+  Enables or disables whether Amazon SES forwards notifications as email.
+  """
   @spec set_identity_feedback_forwarding_enabled(boolean, binary) :: ExAws.Operation.Query.t()
   def set_identity_feedback_forwarding_enabled(enabled, identity) do
     request(:set_identity_feedback_forwarding_enabled, %{"ForwardingEnabled" => enabled, "Identity" => identity})
   end
 
-  @doc "Build message object"
+  @doc """
+  Build message object.
+  """
   @spec build_message(binary, binary, binary, binary) :: message
   def build_message(html, txt, subject, charset \\ "UTF-8") do
     %{
@@ -540,7 +568,9 @@ defmodule ExAws.SES do
     }
   end
 
-  @doc "Set whether SNS notifications should include original email headers or not"
+  @doc """
+  Set whether SNS notifications should include original email headers or not.
+  """
   @spec set_identity_headers_in_notifications_enabled(binary, notification_type, boolean) :: ExAws.Operation.Query.t()
   def set_identity_headers_in_notifications_enabled(identity, type, enabled) do
     notification_type = Atom.to_string(type) |> String.capitalize()

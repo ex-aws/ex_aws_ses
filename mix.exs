@@ -16,8 +16,7 @@ defmodule ExAws.SES.Mixfile do
       deps: deps(),
       name: @name,
       package: package(),
-      docs: [main: @name, source_ref: "v#{@version}",
-        source_url: @url]
+      docs: docs()
     ]
   end
 
@@ -32,11 +31,15 @@ defmodule ExAws.SES.Mixfile do
   end
 
   defp package do
-    [description: "#{@name} service package",
-     files: ["lib", "config", "mix.exs", "README*"],
-     maintainers: ["Ben Wilson"],
-     licenses: ["MIT"],
-     links: %{github: @url},
+    [
+      description: "#{@name} service package",
+      files: ["lib", "config", "mix.exs", "CHANGELOG*", "README*"],
+      maintainers: ["Ben Wilson"],
+      licenses: ["MIT"],
+      links: %{
+        Changelog: "https://hexdocs.pm/ex_aws_ses/changelog.html",
+        GitHub: @url
+      },
     ]
   end
 
@@ -47,8 +50,18 @@ defmodule ExAws.SES.Mixfile do
       {:sweet_xml, ">= 0.0.0", only: [:dev, :test]},
       {:poison, ">= 0.0.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.19", only: [:dev, :test]},
+      {:ex_doc, ">= 0.0.0", only: [:dev, :test], runtime: false},
       ex_aws()
+    ]
+  end
+
+  defp docs do
+    [
+      extras: ["CHANGELOG.md", "README.md"],
+      main: "readme",
+      source_url: @url,
+      source_ref: "v#{@version}",
+      formatters: ["html"]
     ]
   end
 
