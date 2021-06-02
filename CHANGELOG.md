@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Add more template function
+## v2.3.0 - 2021-05-02
+
+ - Add functions for custom verification emails by @wmnnd
 
 ## v2.2.0 - 2021-04-23
 
