@@ -119,11 +119,12 @@ defmodule ExAws.SES do
           | {:topics, [topic]}
   @spec update_contact_list(String.t(), opts :: [update_contact_list_opt]) :: ExAws.Operation.JSON.t()
   def update_contact_list(list_name, opts \\ []) do
-    data = prune_map(%{
-      "ContactListName" => list_name,
-      "Description" => opts[:description],
-      "Topics" => opts[:topics]
-    })
+    data =
+      prune_map(%{
+        "ContactListName" => list_name,
+        "Description" => opts[:description],
+        "Topics" => opts[:topics]
+      })
 
     request_v2(:put, "contact-lists/#{list_name}")
     |> Map.put(:data, data)
@@ -179,12 +180,13 @@ defmodule ExAws.SES do
           | {:unsubscribe_all, Boolean.t()}
   @spec create_contact(String.t(), email_address, [contact_opt]) :: ExAws.Operation.JSON.t()
   def create_contact(list_name, email, opts \\ []) do
-    data = prune_map(%{
-      "EmailAddress" => email,
-      "TopicPreferences" => opts[:topic_preferences],
-      "AttributesData" => opts[:attributes],
-      "UnsubscribeAll" => opts[:unsubscribe_all]
-    })
+    data =
+      prune_map(%{
+        "EmailAddress" => email,
+        "TopicPreferences" => opts[:topic_preferences],
+        "AttributesData" => opts[:attributes],
+        "UnsubscribeAll" => opts[:unsubscribe_all]
+      })
 
     request_v2(:post, "contact-lists/#{list_name}/contacts")
     |> Map.put(:data, data)
@@ -195,11 +197,12 @@ defmodule ExAws.SES do
   """
   @spec update_contact(String.t(), email_address, [contact_opt]) :: ExAws.Operation.JSON.t()
   def update_contact(list_name, email, opts \\ []) do
-    data = prune_map(%{
-      "TopicPreferences" => opts[:topic_preferences],
-      "AttributesData" => opts[:attributes],
-      "UnsubscribeAll" => opts[:unsubscribe_all]
-    })
+    data =
+      prune_map(%{
+        "TopicPreferences" => opts[:topic_preferences],
+        "AttributesData" => opts[:attributes],
+        "UnsubscribeAll" => opts[:unsubscribe_all]
+      })
 
     request_v2(:put, "contact-lists/#{list_name}/contacts/#{email}")
     |> Map.put(:data, data)
@@ -240,15 +243,14 @@ defmodule ExAws.SES do
   """
   @type import_data_source :: %{DataFormat: String.t(), S3Url: String.t()}
   @type contact_list_destination :: %{
-    ContactListImportAction: String.t(),
-    ContactListName: String.t()
-  }
+          ContactListImportAction: String.t(),
+          ContactListName: String.t()
+        }
   @type suppression_list_destination :: %{SuppressionListImportAction: String.t()}
   @type import_destination :: %{
-    optional(:ContactListDestination) => contact_list_destination(),
-    optional(:SuppressionListDestination) => suppression_list_destination()
-
-  }
+          optional(:ContactListDestination) => contact_list_destination(),
+          optional(:SuppressionListDestination) => suppression_list_destination()
+        }
   @spec create_import_job(import_data_source(), import_destination()) :: ExAws.Operation.JSON.t()
   def create_import_job(data_source, destination) do
     data = %{
@@ -286,7 +288,8 @@ defmodule ExAws.SES do
   Creates an email template.
   """
   @type create_template_opt :: {:configuration_set_name, String.t()}
-  @spec create_template(String.t(), String.t(), String.t(), String.t(), opts :: [create_template_opt]) :: ExAws.Operation.Query.t()
+  @spec create_template(String.t(), String.t(), String.t(), String.t(), opts :: [create_template_opt]) ::
+          ExAws.Operation.Query.t()
   def create_template(template_name, subject, html, text, opts \\ []) do
     template =
       %{
@@ -309,15 +312,17 @@ defmodule ExAws.SES do
   Updates an email template.
   """
   @type update_template_opt :: {:configuration_set_name, String.t()}
-  @spec update_template(String.t(), String.t(), String.t(), String.t(), opts :: [update_template_opt]) :: ExAws.Operation.Query.t()
+  @spec update_template(String.t(), String.t(), String.t(), String.t(), opts :: [update_template_opt]) ::
+          ExAws.Operation.Query.t()
   def update_template(template_name, subject, html, text, opts \\ []) do
-    template = %{
-      "TemplateName" => template_name,
-      "SubjectPart" => subject
-    }
-    |> put_if_not_nil("HtmlPart", html)
-    |> put_if_not_nil("TextPart", text)
-    |> flatten_attrs("Template")
+    template =
+      %{
+        "TemplateName" => template_name,
+        "SubjectPart" => subject
+      }
+      |> put_if_not_nil("HtmlPart", html)
+      |> put_if_not_nil("TextPart", text)
+      |> flatten_attrs("Template")
 
     params =
       opts
@@ -326,6 +331,7 @@ defmodule ExAws.SES do
 
     request(:update_template, params)
   end
+
   @doc """
   Deletes an email template.
   """
@@ -407,18 +413,19 @@ defmodule ExAws.SES do
     @spec(send_email_v2(destination_v2, email_content, email_address, [send_email_v2_opt]))
   )
   def send_email_v2(destination, content, from_email, opts \\ []) do
-    data = prune_map(%{
-      ConfigurationSetName: opts[:configuration_set_name],
-      Content: content,
-      Destination: destination,
-      EmailTags: opts[:tags],
-      FeedbackForwardingEmailAddress: opts[:feedback_forwarding_address],
-      FeedbackForwardingEmailAddressIdentityArn: opts[:feedback_forwarding_arn],
-      FromEmailAddress: from_email,
-      FromEmailAddressIdentityArn: opts[:from_arn],
-      ListManagementOptions: opts[:list_management],
-      ReplyToAddresses: opts[:reply_addresses]
-    })
+    data =
+      prune_map(%{
+        ConfigurationSetName: opts[:configuration_set_name],
+        Content: content,
+        Destination: destination,
+        EmailTags: opts[:tags],
+        FeedbackForwardingEmailAddress: opts[:feedback_forwarding_address],
+        FeedbackForwardingEmailAddressIdentityArn: opts[:feedback_forwarding_arn],
+        FromEmailAddress: from_email,
+        FromEmailAddressIdentityArn: opts[:from_arn],
+        ListManagementOptions: opts[:list_management],
+        ReplyToAddresses: opts[:reply_addresses]
+      })
 
     request_v2(:post, "outbound-emails")
     |> Map.put(:data, data)
