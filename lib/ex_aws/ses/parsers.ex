@@ -26,16 +26,32 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
-    def parse({:ok, %{body: xml}=resp}, :list_configuration_sets) do
-      parsed_body = xml
-      |> SweetXml.xpath(~x"//ListConfigurationSetsResponse",
-                        configuration_sets: [
-                          ~x"./ListConfigurationSetsResult",
-                            members: ~x"./ConfigurationSets/member/Name/text()"ls,
-                            next_token: ~x"./NextToken/text()"so,
-                          ],
-                          request_id: request_id_xpath()
-      )
+    def parse({:ok, %{body: xml} = resp}, :list_identities) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(~x"//ListIdentitiesResponse",
+          custom_verification_email_templates: [
+            ~x"./ListIdentitiesResult",
+            members: ~x"./Identities/member/text()"ls,
+            next_token: ~x"./NextToken/text()"so
+          ],
+          request_id: request_id_xpath()
+        )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :list_configuration_sets) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(~x"//ListConfigurationSetsResponse",
+          configuration_sets: [
+            ~x"./ListConfigurationSetsResult",
+            members: ~x"./ConfigurationSets/member/Name/text()"ls,
+            next_token: ~x"./NextToken/text()"so
+          ],
+          request_id: request_id_xpath()
+        )
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
@@ -111,6 +127,28 @@ if Code.ensure_loaded?(SweetXml) do
 
     def parse({:ok, %{body: xml} = resp}, :delete_template) do
       parsed_body = SweetXml.xpath(xml, ~x"//DeleteTemplateResponse", request_id: request_id_xpath())
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+    def parse({:ok, %{body: xml} = resp}, :list_custom_verification_email_templates) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(~x"//ListCustomVerificationEmailTemplatesResponse",
+          custom_verification_email_templates: [
+            ~x"./ListCustomVerificationEmailTemplatesResult",
+            members: [
+              ~x"./CustomVerificationEmailTemplates/member"l,
+              template_name: ~x"./TemplateName/text()"so,
+              from_email_address: ~x"./FromEmailAddress/text()"so,
+              template_subject: ~x"./TemplateSubject/text()"so,
+              success_redirection_url: ~x"./SuccessRedirectionURL/text()"so,
+              failure_redirection_url: ~x"./FailureRedirectionURL/text()"so
+            ],
+            next_token: ~x"./NextToken/text()"so
+          ],
+          request_id: request_id_xpath()
+        )
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
