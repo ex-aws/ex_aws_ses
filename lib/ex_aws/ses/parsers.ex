@@ -4,24 +4,25 @@ if Code.ensure_loaded?(SweetXml) do
 
     @moduledoc false
 
-    def parse({:ok, %{body: xml}=resp}, :verify_email_identity) do
+    def parse({:ok, %{body: xml} = resp}, :verify_email_identity) do
       parsed_body = SweetXml.xpath(xml, ~x"//VerifyEmailIdentityResponse", request_id: request_id_xpath())
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
-    def parse({:ok, %{body: xml}=resp}, :get_identity_verification_attributes) do
-      parsed_body = xml
-      |> SweetXml.xpath(~x"//GetIdentityVerificationAttributesResponse",
-                        verification_attributes: [
-                          ~x"./GetIdentityVerificationAttributesResult/VerificationAttributes/entry"l,
-                          entry: ~x"./key/text()"s,
-                          verification_status: ~x"./value/VerificationStatus/text()"s,
-                          verification_token: ~x"./value/VerificationToken/text()"so
-                        ],
-                        request_id: request_id_xpath()
-      )
-      |> update_in([:verification_attributes], &verification_attributes_list_to_map/1)
+    def parse({:ok, %{body: xml} = resp}, :get_identity_verification_attributes) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(~x"//GetIdentityVerificationAttributesResponse",
+          verification_attributes: [
+            ~x"./GetIdentityVerificationAttributesResult/VerificationAttributes/entry"l,
+            entry: ~x"./key/text()"s,
+            verification_status: ~x"./value/VerificationStatus/text()"s,
+            verification_token: ~x"./value/VerificationToken/text()"so
+          ],
+          request_id: request_id_xpath()
+        )
+        |> update_in([:verification_attributes], &verification_attributes_list_to_map/1)
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
@@ -56,22 +57,24 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
-    def parse({:ok, %{body: xml}=resp}, :send_email) do
-      parsed_body = xml
-      |> SweetXml.xpath(~x"//SendEmailResponse",
-                        message_id: ~x"./SendEmailResult/MessageId/text()"s,
-                        request_id: request_id_xpath()
-      )
+    def parse({:ok, %{body: xml} = resp}, :send_email) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(~x"//SendEmailResponse",
+          message_id: ~x"./SendEmailResult/MessageId/text()"s,
+          request_id: request_id_xpath()
+        )
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
-    def parse({:ok, %{body: xml}=resp}, :send_templated_email) do
-      parsed_body = xml
-      |> SweetXml.xpath(~x"//SendTemplatedEmailResponse",
-                        message_id: ~x"./SendTemplatedEmailResult/MessageId/text()"s,
-                        request_id: request_id_xpath()
-      )
+    def parse({:ok, %{body: xml} = resp}, :send_templated_email) do
+      parsed_body =
+        xml
+        |> SweetXml.xpath(~x"//SendTemplatedEmailResponse",
+          message_id: ~x"./SendTemplatedEmailResult/MessageId/text()"s,
+          request_id: request_id_xpath()
+        )
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
@@ -80,41 +83,47 @@ if Code.ensure_loaded?(SweetXml) do
       parsed_body =
         xml
         |> SweetXml.xmap(
-             messages: [
-               ~x[//SendBulkTemplatedEmailResponse/SendBulkTemplatedEmailResult/Status/member]l,
-               message_id: ~x"./MessageId/text()"s,
-               status: ~x"./Status/text()"s
-             ],
-             request_id: request_id_xpath()
-           )
+          messages: [
+            ~x[//SendBulkTemplatedEmailResponse/SendBulkTemplatedEmailResult/Status/member]l,
+            message_id: ~x"./MessageId/text()"s,
+            status: ~x"./Status/text()"s
+          ],
+          request_id: request_id_xpath()
+        )
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
-    def parse({:ok, %{body: xml}=resp}, :delete_identity) do
+    def parse({:ok, %{body: xml} = resp}, :delete_identity) do
       parsed_body = SweetXml.xpath(xml, ~x"//DeleteIdentityResponse", request_id: request_id_xpath())
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
-    def parse({:ok, %{body: xml}=resp}, :set_identity_notification_topic) do
+    def parse({:ok, %{body: xml} = resp}, :set_identity_notification_topic) do
       parsed_body = SweetXml.xpath(xml, ~x"//SetIdentityNotificationTopicResponse", request_id: request_id_xpath())
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
-    def parse({:ok, %{body: xml}=resp}, :set_identity_feedback_forwarding_enabled) do
-      parsed_body = SweetXml.xpath(
-        xml, ~x"//SetIdentityFeedbackForwardingEnabledResponse", request_id: request_id_xpath()
-      )
+    def parse({:ok, %{body: xml} = resp}, :set_identity_feedback_forwarding_enabled) do
+      parsed_body =
+        SweetXml.xpath(
+          xml,
+          ~x"//SetIdentityFeedbackForwardingEnabledResponse",
+          request_id: request_id_xpath()
+        )
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
-    def parse({:ok, %{body: xml}=resp}, :set_identity_headers_in_notifications_enabled) do
-      parsed_body = SweetXml.xpath(
-        xml, ~x"//SetIdentityHeadersInNotificationsEnabledResponse", request_id: request_id_xpath()
-      )
+    def parse({:ok, %{body: xml} = resp}, :set_identity_headers_in_notifications_enabled) do
+      parsed_body =
+        SweetXml.xpath(
+          xml,
+          ~x"//SetIdentityHeadersInNotificationsEnabledResponse",
+          request_id: request_id_xpath()
+        )
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
@@ -154,13 +163,15 @@ if Code.ensure_loaded?(SweetXml) do
     end
 
     def parse({:error, {type, http_status_code, %{body: xml}}}, _) do
-      parsed_body = xml
-      |> SweetXml.xpath(~x"//ErrorResponse",
-      request_id: ~x"./RequestId/text()"s,
-      type: ~x"./Error/Type/text()"s,
-      code: ~x"./Error/Code/text()"s,
-      message: ~x"./Error/Message/text()"s,
-      detail: ~x"./Error/Detail/text()"s)
+      parsed_body =
+        xml
+        |> SweetXml.xpath(~x"//ErrorResponse",
+          request_id: ~x"./RequestId/text()"s,
+          type: ~x"./Error/Type/text()"s,
+          code: ~x"./Error/Code/text()"s,
+          message: ~x"./Error/Message/text()"s,
+          detail: ~x"./Error/Detail/text()"s
+        )
 
       {:error, {type, http_status_code, parsed_body}}
     end
@@ -172,11 +183,11 @@ if Code.ensure_loaded?(SweetXml) do
     end
 
     defp verification_attributes_list_to_map(attributes) do
-      Enum.reduce(attributes, %{}, fn(%{entry: key} = attribute, acc) ->
+      Enum.reduce(attributes, %{}, fn %{entry: key} = attribute, acc ->
         props =
           attribute
           |> Map.delete(:entry)
-          |> Enum.reject(fn (kv) -> elem(kv, 1) in ["", nil] end)
+          |> Enum.reject(fn kv -> elem(kv, 1) in ["", nil] end)
           |> Enum.into(%{})
 
         Map.put_new(acc, key, props)
