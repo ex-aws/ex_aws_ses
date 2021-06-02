@@ -265,6 +265,72 @@ defmodule ExAws.SES.ParserTest do
     assert parsed_doc == %{request_id: "12345abcd-c666-111e-88aa-cc8899bb1177"}
   end
 
+  test "#parse list_identities" do
+    rsp = """
+      <ListIdentitiesResponse xmlns=\"http://ses.amazonaws.com/doc/2010-12-01/\">
+        <ListIdentitiesResult>
+          <Identities>
+            <member>user@example.com</member>
+            <member>user2@example.com</member>
+          </Identities>
+        </ListIdentitiesResult>
+        <ResponseMetadata>
+          <RequestId>12345abcd-c666-111e-88aa-cc8899bb1177</RequestId>
+        </ResponseMetadata>
+      </ListIdentitiesResponse>
+    """
+    |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :list_identities)
+
+    assert parsed_doc == %{
+      request_id: "12345abcd-c666-111e-88aa-cc8899bb1177",
+      custom_verification_email_templates: %{
+        members: ["user@example.com", "user2@example.com"],
+        next_token: ""
+      }
+    }
+  end
+
+  test "#parse list_custom_verification_email_templates" do
+    rsp = """
+    <ListCustomVerificationEmailTemplatesResponse xmlns=\"http://ses.amazonaws.com/doc/2010-12-01/\">
+      <ListCustomVerificationEmailTemplatesResult>
+        <CustomVerificationEmailTemplates>
+          <member>
+            <TemplateSubject>Subject</TemplateSubject>
+            <FailureRedirectionURL>https://example.com/failure</FailureRedirectionURL>
+            <SuccessRedirectionURL>https://example.com/success</SuccessRedirectionURL>
+            <FromEmailAddress>user@example.com</FromEmailAddress>
+            <TemplateName>Template Name</TemplateName>
+          </member>
+        </CustomVerificationEmailTemplates>
+      </ListCustomVerificationEmailTemplatesResult>
+      <ResponseMetadata>
+        <RequestId>12345abcd-c666-111e-88aa-cc8899bb1177</RequestId>
+      </ResponseMetadata>
+    </ListCustomVerificationEmailTemplatesResponse>
+    """
+    |> to_success()
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :list_custom_verification_email_templates)
+    assert parsed_doc == %{
+      request_id: "12345abcd-c666-111e-88aa-cc8899bb1177",
+      custom_verification_email_templates: %{
+        members: [
+          %{
+            template_name: "Template Name",
+            template_subject: "Subject",
+            failure_redirection_url: "https://example.com/failure",
+            success_redirection_url: "https://example.com/success",
+            from_email_address: "user@example.com"
+          }
+        ],
+        next_token: ""
+      }
+    }
+  end
+
   test "#parse error" do
     rsp = """
       <ErrorResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">
