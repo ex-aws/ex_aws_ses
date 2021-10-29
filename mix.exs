@@ -1,7 +1,7 @@
 defmodule ExAws.SES.Mixfile do
   use Mix.Project
 
-  @version "2.1.1"
+  @version "2.3.0"
   @service "ses"
   @url "https://github.com/ex-aws/ex_aws_#{@service}"
   @name __MODULE__ |> Module.split |> Enum.take(2) |> Enum.join(".")
@@ -9,7 +9,7 @@ defmodule ExAws.SES.Mixfile do
   def project do
     [
       app: :ex_aws_ses,
-      version: @version,
+      app: @version,
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env),
       start_permanent: Mix.env == :prod,
