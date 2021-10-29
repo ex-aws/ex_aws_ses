@@ -4,15 +4,15 @@ defmodule ExAws.SES.Mixfile do
   @version "2.3.0"
   @service "ses"
   @url "https://github.com/ex-aws/ex_aws_#{@service}"
-  @name __MODULE__ |> Module.split |> Enum.take(2) |> Enum.join(".")
+  @name __MODULE__ |> Module.split() |> Enum.take(2) |> Enum.join(".")
 
   def project do
     [
       app: :ex_aws_ses,
       version: @version,
       elixir: "~> 1.5",
-      elixirc_paths: elixirc_paths(Mix.env),
-      start_permanent: Mix.env == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
+      start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: @name,
       package: package(),
@@ -21,7 +21,7 @@ defmodule ExAws.SES.Mixfile do
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_),     do: ["lib",]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Run "mix help compile.app" to learn about applications.
   def application do
@@ -39,7 +39,7 @@ defmodule ExAws.SES.Mixfile do
       links: %{
         Changelog: "https://hexdocs.pm/ex_aws_ses/changelog.html",
         GitHub: @url
-      },
+      }
     ]
   end
 
