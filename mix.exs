@@ -9,7 +9,7 @@ defmodule ExAws.SES.Mixfile do
   def project do
     [
       app: :ex_aws_ses,
-      app: @version,
+      version: @version,
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env),
       start_permanent: Mix.env == :prod,
