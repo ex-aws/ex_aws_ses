@@ -199,6 +199,30 @@ defmodule ExAws.SESTest do
     end
   end
 
+  describe "suppressed destinations" do
+    test "#put_suppressed_destination" do
+      email = "test@example.com"
+      operation = SES.put_suppressed_destination(email, :BOUNCE)
+
+      expected_data = %{
+        EmailAddress: email,
+        Reason: :BOUNCE
+      }
+
+      assert operation.http_method == :put
+      assert operation.path == "/v2/email/suppression/addresses"
+      assert operation.data == expected_data
+    end
+
+    test "#delete_suppressed_destination" do
+      email = "test@example.com"
+      operation = SES.delete_suppressed_destination(email)
+
+      assert operation.http_method == :delete
+      assert operation.path == "/v2/email/suppression/addresses/#{email}"
+    end
+  end
+
   describe "v2 API send_email" do
     test "simple html", context do
       content = %{
