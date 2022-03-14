@@ -108,8 +108,7 @@ defmodule ExAws.SESTest do
       source = %{DataFormat: "CSV", S3Url: "s3://test_bucket/test_object.csv"}
       destination = %{ContactListDestination: %{ContactListImportAction: "PUT", ContactListName: @list_name}}
 
-      expected_data =
-        data = %{
+      expected_data = %{
           ImportDataSource: source,
           ImportDestination: destination
         }
