@@ -26,6 +26,7 @@ defmodule ExAws.SES do
 
   @type tag :: %{Key: String.t(), Value: String.t()}
   @type list_topic :: %{String.t() => String.t()}
+  @type suppression_reason :: :BOUNCE | :COMPLAINT
 
   @doc "List identities associated with the AWS account"
   @spec list_identities(opts :: [] | [list_identities_opt]) :: ExAws.Operation.Query.t()
@@ -260,6 +261,29 @@ defmodule ExAws.SES do
 
     request_v2(:post, "import-jobs")
     |> Map.put(:data, data)
+  end
+
+  ## Suppression Lists
+  ######################
+  @doc """
+  Add an email address to list of suppressed destinations. A suppression reason
+  is mandatory (see `t:suppression_reason()`).
+  """
+  @spec put_suppressed_destination(String.t(), SuppressionReason.t()) :: ExAws.Operation.JSON.t()
+  def put_suppressed_destination(email_address, suppression_reason) do
+    request_v2(:put, "suppression/addresses")
+    |> Map.put(:data, %{
+      EmailAddress: email_address,
+      Reason: suppression_reason
+    })
+  end
+
+  @doc """
+  Delete an email address from list of suppressed destinations.
+  """
+  @spec delete_suppressed_destination(String.t()) :: ExAws.Operation.JSON.t()
+  def delete_suppressed_destination(email_address) do
+    request_v2(:delete, "suppression/addresses/#{email_address}")
   end
 
   ## Templates

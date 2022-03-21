@@ -108,8 +108,7 @@ defmodule ExAws.SESTest do
       source = %{DataFormat: "CSV", S3Url: "s3://test_bucket/test_object.csv"}
       destination = %{ContactListDestination: %{ContactListImportAction: "PUT", ContactListName: @list_name}}
 
-      expected_data =
-        data = %{
+      expected_data = %{
           ImportDataSource: source,
           ImportDestination: destination
         }
@@ -197,6 +196,30 @@ defmodule ExAws.SESTest do
 
       assert operation.http_method == :delete
       assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{email}"
+    end
+  end
+
+  describe "suppressed destinations" do
+    test "#put_suppressed_destination" do
+      email = "test@example.com"
+      operation = SES.put_suppressed_destination(email, :BOUNCE)
+
+      expected_data = %{
+        EmailAddress: email,
+        Reason: :BOUNCE
+      }
+
+      assert operation.http_method == :put
+      assert operation.path == "/v2/email/suppression/addresses"
+      assert operation.data == expected_data
+    end
+
+    test "#delete_suppressed_destination" do
+      email = "test@example.com"
+      operation = SES.delete_suppressed_destination(email)
+
+      assert operation.http_method == :delete
+      assert operation.path == "/v2/email/suppression/addresses/#{email}"
     end
   end
 
