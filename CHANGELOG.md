@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v2.4.0 - 2021-05-02
+
+- Add v2 API's [PutSuppressedDestination](https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_PutSuppressedDestination.html) by @mtarnovan
+- Add v2 API's [DeleteSuppressedDestination](https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_DeleteSuppressedDestination.html) by @mtarnovan
+
 ## v2.3.0 - 2021-05-02
 
- - Add functions for custom verification emails by @wmnnd
+- Add functions for custom verification emails by @wmnnd
 
 ## v2.2.0 - 2021-04-23
 
