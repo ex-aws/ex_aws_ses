@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## v2.4.0 - 2021-05-02
+## v2.4.1 - 2021-03-03
+
+- Fix email address encoding in `PutSuppressedDestination` `DeleteSuppressedDestination` by @mtarnovan
+- Switch to from Poison to Jason
+
+## v2.4.0 - 2022-03-21
 
 - Add v2 API's [PutSuppressedDestination](https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_PutSuppressedDestination.html) by @mtarnovan
 - Add v2 API's [DeleteSuppressedDestination](https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_DeleteSuppressedDestination.html) by @mtarnovan
