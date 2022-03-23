@@ -171,7 +171,7 @@ defmodule ExAws.SESTest do
         )
 
       assert operation.http_method == :put
-      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{ExAws.Request.Url.uri_encode(email)}"
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/test%2Bbar%40example.com"
       assert operation.data == expected_data
     end
 
@@ -187,7 +187,7 @@ defmodule ExAws.SESTest do
       operation = SES.get_contact(@list_name, email)
 
       assert operation.http_method == :get
-      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{ExAws.Request.Url.uri_encode(email)}"
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/test%2Bbar%40example.com"
     end
 
     test "#delete_contact" do
@@ -195,7 +195,7 @@ defmodule ExAws.SESTest do
       operation = SES.delete_contact(@list_name, email)
 
       assert operation.http_method == :delete
-      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{ExAws.Request.Url.uri_encode(email)}"
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/test%2Bbar%40example.com"
     end
   end
 
@@ -215,11 +215,11 @@ defmodule ExAws.SESTest do
     end
 
     test "#delete_suppressed_destination" do
-      email = "test+stuff@example.com"
+      email = "test+bar@example.com"
       operation = SES.delete_suppressed_destination(email)
 
       assert operation.http_method == :delete
-      assert operation.path == "/v2/email/suppression/addresses/#{ExAws.Request.Url.uri_encode(email)}"
+      assert operation.path == "/v2/email/suppression/addresses/test%2Bbar%40example.com"
     end
   end
 
