@@ -205,7 +205,9 @@ defmodule ExAws.SES do
         "UnsubscribeAll" => opts[:unsubscribe_all]
       })
 
-    request_v2(:put, "contact-lists/#{list_name}/contacts/#{email}")
+    uri_encoded_email = ExAws.Request.Url.uri_encode(email)
+
+    request_v2(:put, "contact-lists/#{list_name}/contacts/#{uri_encoded_email}")
     |> Map.put(:data, data)
   end
 
@@ -222,7 +224,8 @@ defmodule ExAws.SES do
   """
   @spec get_contact(String.t(), email_address) :: ExAws.Operation.JSON.t()
   def get_contact(list_name, email) do
-    request_v2(:get, "contact-lists/#{list_name}/contacts/#{email}")
+    uri_encoded_email = ExAws.Request.Url.uri_encode(email)
+    request_v2(:get, "contact-lists/#{list_name}/contacts/#{uri_encoded_email}")
   end
 
   @doc """
@@ -230,7 +233,8 @@ defmodule ExAws.SES do
   """
   @spec delete_contact(String.t(), email_address) :: ExAws.Operation.JSON.t()
   def delete_contact(list_name, email) do
-    request_v2(:delete, "contact-lists/#{list_name}/contacts/#{email}")
+    uri_encoded_email = ExAws.Request.Url.uri_encode(email)
+    request_v2(:delete, "contact-lists/#{list_name}/contacts/#{uri_encoded_email}")
   end
 
   @doc """
@@ -283,7 +287,9 @@ defmodule ExAws.SES do
   """
   @spec delete_suppressed_destination(String.t()) :: ExAws.Operation.JSON.t()
   def delete_suppressed_destination(email_address) do
-    request_v2(:delete, "suppression/addresses/#{email_address}")
+    uri_encoded_email_address = ExAws.Request.Url.uri_encode(email_address)
+
+    request_v2(:delete, "suppression/addresses/#{uri_encoded_email_address}")
   end
 
   ## Templates

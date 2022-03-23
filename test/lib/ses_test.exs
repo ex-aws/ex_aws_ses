@@ -109,9 +109,9 @@ defmodule ExAws.SESTest do
       destination = %{ContactListDestination: %{ContactListImportAction: "PUT", ContactListName: @list_name}}
 
       expected_data = %{
-          ImportDataSource: source,
-          ImportDestination: destination
-        }
+        ImportDataSource: source,
+        ImportDestination: destination
+      }
 
       operation = SES.create_import_job(source, destination)
 
@@ -150,7 +150,7 @@ defmodule ExAws.SESTest do
     end
 
     test "#update_contact" do
-      email = "test@example.com"
+      email = "test+bar@example.com"
       topic = %{TopicName: "test_topic", SubscriptionStatus: "OPT_IN"}
       attributes = "test attribute"
       unsubscribe = false
@@ -171,7 +171,7 @@ defmodule ExAws.SESTest do
         )
 
       assert operation.http_method == :put
-      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{email}"
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/test%2Bbar%40example.com"
       assert operation.data == expected_data
     end
 
@@ -183,19 +183,19 @@ defmodule ExAws.SESTest do
     end
 
     test "#get_contact" do
-      email = "test@example.com"
+      email = "test+bar@example.com"
       operation = SES.get_contact(@list_name, email)
 
       assert operation.http_method == :get
-      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{email}"
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/test%2Bbar%40example.com"
     end
 
     test "#delete_contact" do
-      email = "test@example.com"
+      email = "test+bar@example.com"
       operation = SES.delete_contact(@list_name, email)
 
       assert operation.http_method == :delete
-      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/#{email}"
+      assert operation.path == "/v2/email/contact-lists/#{@list_name}/contacts/test%2Bbar%40example.com"
     end
   end
 
@@ -215,11 +215,11 @@ defmodule ExAws.SESTest do
     end
 
     test "#delete_suppressed_destination" do
-      email = "test@example.com"
+      email = "test+bar@example.com"
       operation = SES.delete_suppressed_destination(email)
 
       assert operation.http_method == :delete
-      assert operation.path == "/v2/email/suppression/addresses/#{email}"
+      assert operation.path == "/v2/email/suppression/addresses/test%2Bbar%40example.com"
     end
   end
 
