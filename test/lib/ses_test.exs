@@ -414,7 +414,7 @@ defmodule ExAws.SESTest do
         "Destination.ToAddresses.member.1" => "success@simulator.amazonses.com",
         "Template" => "my_template",
         "Source" => "user@example.com",
-        "TemplateData" => Poison.encode!(template_data)
+        "TemplateData" => Jason.encode!(template_data)
       }
 
       assert expected == SES.send_templated_email(dst, src, "my_template", template_data).params
@@ -448,7 +448,7 @@ defmodule ExAws.SESTest do
         "Tags.member.2.Name" => "tag2",
         "Tags.member.2.Value" => "tag2value1",
         "Template" => "my_template",
-        "TemplateData" => Poison.encode!(template_data)
+        "TemplateData" => Jason.encode!(template_data)
       }
 
       assert expected ==
@@ -497,13 +497,13 @@ defmodule ExAws.SESTest do
         "Source" => "user@example.com",
         "Destinations.member.1.Destination.ToAddresses.member.1" => "email1@email.com",
         "Destinations.member.1.Destination.ToAddresses.member.2" => "email2@email.com",
-        "Destinations.member.1.ReplacementTemplateData" => Poison.encode!(replacement_template_data1),
+        "Destinations.member.1.ReplacementTemplateData" => Jason.encode!(replacement_template_data1),
         "Destinations.member.2.Destination.ToAddresses.member.1" => "email3@email.com",
         "Destinations.member.2.Destination.CcAddresses.member.1" => "email4@email.com",
         "Destinations.member.2.Destination.CcAddresses.member.2" => "email5@email.com",
         "Destinations.member.2.Destination.BccAddresses.member.1" => "email6@email.com",
         "Destinations.member.2.Destination.BccAddresses.member.2" => "email7@email.com",
-        "Destinations.member.2.ReplacementTemplateData" => Poison.encode!(replacement_template_data2),
+        "Destinations.member.2.ReplacementTemplateData" => Jason.encode!(replacement_template_data2),
         "Destinations.member.3.Destination.ToAddresses.member.1" => "email8@email.com",
         "DefaultTemplateData" => "{}"
       }
@@ -542,15 +542,15 @@ defmodule ExAws.SESTest do
         "Source" => "user@example.com",
         "Destinations.member.1.Destination.ToAddresses.member.1" => "email1@email.com",
         "Destinations.member.1.Destination.ToAddresses.member.2" => "email2@email.com",
-        "Destinations.member.1.ReplacementTemplateData" => Poison.encode!(replacement_template_data1),
+        "Destinations.member.1.ReplacementTemplateData" => Jason.encode!(replacement_template_data1),
         "Destinations.member.2.Destination.ToAddresses.member.1" => "email3@email.com",
         "Destinations.member.2.Destination.CcAddresses.member.1" => "email4@email.com",
         "Destinations.member.2.Destination.CcAddresses.member.2" => "email5@email.com",
         "Destinations.member.2.Destination.BccAddresses.member.1" => "email6@email.com",
         "Destinations.member.2.Destination.BccAddresses.member.2" => "email7@email.com",
-        "Destinations.member.2.ReplacementTemplateData" => Poison.encode!(replacement_template_data2),
+        "Destinations.member.2.ReplacementTemplateData" => Jason.encode!(replacement_template_data2),
         "Destinations.member.3.Destination.ToAddresses.member.1" => "email8@email.com",
-        "DefaultTemplateData" => Poison.encode!(default_template_data),
+        "DefaultTemplateData" => Jason.encode!(default_template_data),
         "ReplyToAddresses.member.1" => "user@example.com",
         "ReplyToAddresses.member.2" => "user1@example.com",
         "ReturnPath" => "feedback@example.com",
