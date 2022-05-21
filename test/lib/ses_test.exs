@@ -7,7 +7,7 @@ defmodule ExAws.SESTest do
   setup_all do
     {:ok,
      email: "user@example.com",
-     domain: "example.com"
+     domain: "example.com",
      tag: %{Key: "environment", Value: "test"},
      topic: %{TopicName: "test_topic", SubscriptionStatus: "OPT_IN"},
      list_management: %{ContactListName: @list_name, TopicName: "test_topic"},
