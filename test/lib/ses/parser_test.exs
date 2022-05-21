@@ -27,6 +27,22 @@ defmodule ExAws.SES.ParserTest do
     assert parsed_doc == %{request_id: "d8eb8250-be9b-11e6-b7f7-d570946af758"}
   end
 
+  test "#parse a verify_domain_identity response" do
+    rsp =
+      """
+        <VerifyDomainIdentityResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">
+        <VerifyDomainIdentityResult/>
+          <ResponseMetadata>
+            <RequestId>d8eb8250-be9b-11e6-b7f7-d570946af758</RequestId>
+          </ResponseMetadata>
+        </VerifyDomainIdentityResponse>
+      """
+      |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :verify_domain_identity)
+    assert parsed_doc == %{request_id: "d8eb8250-be9b-11e6-b7f7-d570946af758"}
+  end
+
   test "#parse identity_verification_attributes" do
     rsp =
       """
