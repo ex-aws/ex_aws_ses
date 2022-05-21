@@ -11,7 +11,10 @@ if Code.ensure_loaded?(SweetXml) do
     end
 
     def parse({:ok, %{body: xml} = resp}, :verify_domain_identity) do
-      parsed_body = SweetXml.xpath(xml, ~x"//VerifyDomainIdentityResponse", request_id: request_id_xpath())
+      parsed_body = SweetXml.xpath(xml, ~x"//VerifyDomainIdentityResponse",
+       verification_token: ~x"./value/VerificationToken/text()"so,
+       request_id: request_id_xpath()
+      )
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
