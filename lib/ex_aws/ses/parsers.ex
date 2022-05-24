@@ -12,7 +12,7 @@ if Code.ensure_loaded?(SweetXml) do
 
     def parse({:ok, %{body: xml} = resp}, :verify_domain_identity) do
       parsed_body = SweetXml.xpath(xml, ~x"//VerifyDomainIdentityResponse",
-       verification_token: ~x"./VerifyDomainIdentityResult/VerificationToken/text()"so,
+       verification_token: ~x"./VerifyDomainIdentityResult/VerificationToken/text()"s,
        request_id: request_id_xpath()
       )
 
@@ -20,17 +20,14 @@ if Code.ensure_loaded?(SweetXml) do
     end
 
     def parse({:ok, %{body: xml} = resp}, :verify_domain_dkim) do
-      IO.inspect resp
       parsed_body = SweetXml.xpath(xml, ~x"//VerifyDomainDkimResponse",
        dkim_tokens: [
         ~x"./VerifyDomainDkimResult",
-        members: ~x"./DkimTokens/member/text()"ls,
-        next_token: ~x"./NextToken/text()"so
+        members: ~x"./DkimTokens/member/text()"ls
        ],
        request_id: request_id_xpath()
       )
 
-      IO.inspect parsed_body
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 

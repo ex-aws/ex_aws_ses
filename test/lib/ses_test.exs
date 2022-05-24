@@ -28,7 +28,7 @@ defmodule ExAws.SESTest do
     assert expected == SES.verify_domain_identity(ctx.domain).params
   end
 
-  test "#verify_domain_identity", ctx do
+  test "#verify_domain_dkim", ctx do
     expected = %{"Action" => "VerifyDomainDkim", "Domain" => ctx.domain}
     assert expected == SES.verify_domain_dkim(ctx.domain).params
   end
