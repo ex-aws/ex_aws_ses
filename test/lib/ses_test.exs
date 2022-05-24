@@ -45,6 +45,12 @@ defmodule ExAws.SESTest do
     assert {:ok, %{body: %{request_id: _}}} = resp
   end
 
+  @tag :integration
+  test "#verify_domain_dkimrequest" do
+    resp = SES.verify_domain_dkim("simulator.amazonses.com") |> ExAws.request()
+    assert {:ok, %{body: %{request_id: _}}} = resp
+  end
+
   test "#identity_verification_attributes", ctx do
     expected = %{
       "Action" => "GetIdentityVerificationAttributes",
