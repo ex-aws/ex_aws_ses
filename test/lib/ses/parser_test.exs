@@ -27,6 +27,47 @@ defmodule ExAws.SES.ParserTest do
     assert parsed_doc == %{request_id: "d8eb8250-be9b-11e6-b7f7-d570946af758"}
   end
 
+  test "#parse a verify_domain_identity response" do
+    rsp =
+      """
+        <VerifyDomainIdentityResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">
+          <VerifyDomainIdentityResult>
+            <VerificationToken>u4GmlJ3cPJfxxZbLSPMkLOPjQvJW1HPvA6Pmi21CPIE=</VerificationToken>
+          </VerifyDomainIdentityResult>
+          <ResponseMetadata>
+            <RequestId>d8eb8250-be9b-11e6-b7f7-d570946af758</RequestId>
+          </ResponseMetadata>
+        </VerifyDomainIdentityResponse>
+      """
+      |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :verify_domain_identity)
+    assert parsed_doc == %{request_id: "d8eb8250-be9b-11e6-b7f7-d570946af758", verification_token: "u4GmlJ3cPJfxxZbLSPMkLOPjQvJW1HPvA6Pmi21CPIE="}
+  end
+
+  test "#parse a verify_domain_dkim response" do
+    rsp =
+      """
+        <VerifyDomainDkimResponse xmlns="http://ses.amazonaws.com/doc/2010-12-01/">
+          <VerifyDomainDkimResult>
+            <DkimTokens>
+              <member>5livxhounddpfqprdog22m4c337ake5o</member>
+              <member>tbnwx5g3l0zmstwf2c258r36pvpnksbt</member>
+              <member>bbtl43drumsloilm2zfjlhj3c7v12a5d</member>
+            </DkimTokens>
+          </VerifyDomainDkimResult>
+          <ResponseMetadata>
+            <RequestId>d8eb8250-be9b-11e6-b7f7-d570946af758</RequestId>
+          </ResponseMetadata>
+        </VerifyDomainDkimResponse>
+      """
+      |> to_success
+
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :verify_domain_dkim)
+    assert parsed_doc == %{request_id: "d8eb8250-be9b-11e6-b7f7-d570946af758", dkim_tokens: %{members: ["5livxhounddpfqprdog22m4c337ake5o", "tbnwx5g3l0zmstwf2c258r36pvpnksbt", "bbtl43drumsloilm2zfjlhj3c7v12a5d"]}}
+  end
+
+
   test "#parse identity_verification_attributes" do
     rsp =
       """

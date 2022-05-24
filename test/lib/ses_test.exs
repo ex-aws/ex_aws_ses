@@ -7,6 +7,7 @@ defmodule ExAws.SESTest do
   setup_all do
     {:ok,
      email: "user@example.com",
+     domain: "example.com",
      tag: %{Key: "environment", Value: "test"},
      topic: %{TopicName: "test_topic", SubscriptionStatus: "OPT_IN"},
      list_management: %{ContactListName: @list_name, TopicName: "test_topic"},
@@ -22,9 +23,31 @@ defmodule ExAws.SESTest do
     assert expected == SES.verify_email_identity(ctx.email).params
   end
 
+  test "#verify_domain_identity", ctx do
+    expected = %{"Action" => "VerifyDomainIdentity", "Domain" => ctx.domain}
+    assert expected == SES.verify_domain_identity(ctx.domain).params
+  end
+
+  test "#verify_domain_dkim", ctx do
+    expected = %{"Action" => "VerifyDomainDkim", "Domain" => ctx.domain}
+    assert expected == SES.verify_domain_dkim(ctx.domain).params
+  end
+
   @tag :integration
   test "#verify_email_identity request" do
     resp = SES.verify_email_identity("success@simulator.amazonses.com") |> ExAws.request()
+    assert {:ok, %{body: %{request_id: _}}} = resp
+  end
+
+  @tag :integration
+  test "#verify_domain_identity request" do
+    resp = SES.verify_domain_identity("simulator.amazonses.com") |> ExAws.request()
+    assert {:ok, %{body: %{request_id: _}}} = resp
+  end
+
+  @tag :integration
+  test "#verify_domain_dkimrequest" do
+    resp = SES.verify_domain_dkim("simulator.amazonses.com") |> ExAws.request()
     assert {:ok, %{body: %{request_id: _}}} = resp
   end
 
