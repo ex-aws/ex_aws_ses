@@ -27,6 +27,14 @@ defmodule ExAws.SES do
     request(:verify_domain_identity, %{"Domain" => domain})
   end
 
+  @doc """
+  Verifies a domain with DKIM.
+  """
+  @spec verify_domain_dkim(domain :: binary) :: ExAws.Operation.Query.t()
+  def verify_domain_dkim(domain) do
+    request(:verify_domain_dkim, %{"Domain" => domain})
+  end
+
   @type list_identities_opt ::
           {:max_items, pos_integer}
           | {:next_token, String.t()}

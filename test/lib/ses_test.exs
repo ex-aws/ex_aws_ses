@@ -28,6 +28,11 @@ defmodule ExAws.SESTest do
     assert expected == SES.verify_domain_identity(ctx.domain).params
   end
 
+  test "#verify_domain_identity", ctx do
+    expected = %{"Action" => "VerifyDomainDkim", "Domain" => ctx.domain}
+    assert expected == SES.verify_domain_dkim(ctx.domain).params
+  end
+
   @tag :integration
   test "#verify_email_identity request" do
     resp = SES.verify_email_identity("success@simulator.amazonses.com") |> ExAws.request()
