@@ -57,6 +57,11 @@ if Code.ensure_loaded?(SweetXml) do
             ~x"./ListIdentitiesResult",
             members: ~x"./Identities/member/text()"ls,
             next_token: ~x"./NextToken/text()"so
+          ], #TODO: Remove this key in the next major version, 3.x.x
+          identities: [
+            ~x"./ListIdentitiesResult",
+            members: ~x"./Identities/member/text()"ls,
+            next_token: ~x"./NextToken/text()"so
           ],
           request_id: request_id_xpath()
         )

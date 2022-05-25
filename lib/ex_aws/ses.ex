@@ -46,6 +46,7 @@ defmodule ExAws.SES do
 
   @doc "List identities associated with the AWS account"
   @spec list_identities(opts :: [] | [list_identities_opt]) :: ExAws.Operation.Query.t()
+  @doc deprecated: "The :custom_verification_templates key will be deprecated in version 3.x.x, please use :identities instead"
   def list_identities(opts \\ []) do
     params = build_opts(opts, [:max_items, :next_token, :identity_type])
     request(:list_identities, params)
