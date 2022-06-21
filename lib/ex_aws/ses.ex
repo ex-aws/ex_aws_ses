@@ -716,6 +716,14 @@ defmodule ExAws.SES do
     request(:send_custom_verification_email, params)
   end
 
+  ## Receipt Rules and Rule Sets
+  ######################
+  @doc "Describe the given receipt rule set."
+  @spec describe_receipt_rule_set(String.t()) :: ExAws.Operation.Query.t()
+  def describe_receipt_rule_set(rule_set_name) do
+    request(:describe_receipt_rule_set, %{"RuleSetName" => rule_set_name})
+  end
+
   defp format_dst(dst, root \\ "destination") do
     dst =
       Enum.reduce([:to, :bcc, :cc], %{}, fn key, acc ->
