@@ -189,6 +189,26 @@ if Code.ensure_loaded?(SweetXml) do
       {:ok, Map.put(resp, :body, parsed_body)}
     end
 
+    def parse({:ok, %{body: xml} = resp}, :describe_receipt_rule_set) do
+      parsed_body = SweetXml.xpath(xml, ~x"//DescribeReceiptRuleSetResponse",
+       rules: [
+        ~x"./DescribeReceiptRuleSetResult",
+        members: [
+          ~x"./Rules/member"l,
+          enabled: ~x"/.Enabled/text()"so |> transform_to_boolean(),
+          name: ~x"/.Name/text()"s,
+          recipients: ~x"./Recipients/member/text()"ls,
+          scan_enabled: ~x"/.ScanEnabled/text()"so  |> transform_to_boolean(),
+          tls_policy: ~x"/.TlsPolicy/text()"so,
+        ],
+       ],
+       request_id: request_id_xpath()
+      )
+
+      {:ok, Map.put(resp, :body, parsed_body)}
+    end
+
+
     def parse({:error, {type, http_status_code, %{body: xml}}}, _) do
       parsed_body =
         xml
@@ -218,6 +238,14 @@ if Code.ensure_loaded?(SweetXml) do
           |> Enum.into(%{})
 
         Map.put_new(acc, key, props)
+      end)
+    end
+
+    defp transform_to_boolean(arg) do
+      SweetXml.transform_by(arg, fn
+        "false" -> false
+        "true" -> true
+        _ -> nil
       end)
     end
   end
