@@ -195,11 +195,11 @@ if Code.ensure_loaded?(SweetXml) do
         ~x"./DescribeReceiptRuleSetResult",
         members: [
           ~x"./Rules/member"l,
-          enabled: ~x"/.Enabled/text()"so |> transform_to_boolean(),
-          name: ~x"/.Name/text()"s,
+          enabled: ~x"./Enabled/text()"so |> transform_to_boolean(),
+          name: ~x"./Name/text()"s,
           recipients: ~x"./Recipients/member/text()"ls,
-          scan_enabled: ~x"/.ScanEnabled/text()"so  |> transform_to_boolean(),
-          tls_policy: ~x"/.TlsPolicy/text()"so,
+          scan_enabled: ~x"./ScanEnabled/text()"so  |> transform_to_boolean(),
+          tls_policy: ~x"./TlsPolicy/text()"so,
         ],
        ],
        request_id: request_id_xpath()
@@ -207,7 +207,6 @@ if Code.ensure_loaded?(SweetXml) do
 
       {:ok, Map.put(resp, :body, parsed_body)}
     end
-
 
     def parse({:error, {type, http_status_code, %{body: xml}}}, _) do
       parsed_body =
