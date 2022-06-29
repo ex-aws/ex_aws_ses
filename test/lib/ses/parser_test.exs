@@ -336,6 +336,10 @@ defmodule ExAws.SES.ParserTest do
              custom_verification_email_templates: %{
                members: ["user@example.com", "user2@example.com"],
                next_token: ""
+             },
+             identities: %{
+               members: ["user@example.com", "user2@example.com"],
+               next_token: ""
              }
            }
   end
