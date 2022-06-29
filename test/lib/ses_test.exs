@@ -106,7 +106,7 @@ defmodule ExAws.SESTest do
         cc:  ["success@simulator.amazonses.com"],
         to:  ["success@simulator.amazonses.com", "bounce@simulator.amazonses.com"]
       }
-      
+
       src = "user@example.com"
       template_data = %{data1: "data1", data2: "data2"}
 
@@ -209,10 +209,10 @@ defmodule ExAws.SESTest do
         "ReturnPath" => "feedback@example.com",
         "ReturnPathArn" => "arn:aws:ses:us-east-1:123456789012:identity/example.com",
         "SourceArn" => "east-1:123456789012:identity/example.com",
-        "Tags.member.1.Name" => "tag1",
-        "Tags.member.1.Value" => "tag1value1",
-        "Tags.member.2.Name" => "tag2",
-        "Tags.member.2.Value" => "tag2value1",
+        "DefaultTags.member.1.Name" => "tag1",
+        "DefaultTags.member.1.Value" => "tag1value1",
+        "DefaultTags.member.2.Name" => "tag2",
+        "DefaultTags.member.2.Value" => "tag2value1",
       }
 
       assert expected ==
@@ -226,7 +226,7 @@ defmodule ExAws.SESTest do
                  return_path_arn: "arn:aws:ses:us-east-1:123456789012:identity/example.com",
                  source_arn: "east-1:123456789012:identity/example.com",
                  reply_to: ["user@example.com", "user1@example.com"],
-                 tags: [%{name: "tag1", value: "tag1value1"}, %{name: "tag2", value: "tag2value1"}]
+                 default_tags: [%{name: "tag1", value: "tag1value1"}, %{name: "tag2", value: "tag2value1"}]
                ).params
     end
   end

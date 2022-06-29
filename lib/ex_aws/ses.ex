@@ -20,6 +20,8 @@ defmodule ExAws.SES do
           | {:next_token, String.t()}
           | {:identity_type, String.t()}
 
+  @type tag :: %{Key: String.t(), Value: String.t()}
+
   @doc "List identities associated with the AWS account"
   @spec list_identities(opts :: [] | [list_identities_opt]) :: ExAws.Operation.Query.t()
   def list_identities(opts \\ []) do
@@ -185,7 +187,7 @@ defmodule ExAws.SES do
           | {:return_path_arn, String.t()}
           | {:source_arn, String.t()}
           | {:default_template_data, String.t()}
-          | {:tags, %{(String.t() | atom) => String.t()}}
+          | {:default_tags, [tag]}
 
   @spec send_bulk_templated_email(
           template :: binary,
@@ -197,7 +199,7 @@ defmodule ExAws.SES do
     params =
       opts
       |> build_opts([:configuration_set_name, :return_path, :return_path_arn, :source_arn, :default_template_data])
-      |> Map.merge(format_tags(opts[:tags]))
+      |> Map.merge(format_tags(opts[:default_tags], "default_tags"))
       |> Map.merge(format_bulk_destinations(destinations))
       |> Map.put("DefaultTemplateData", format_template_data(opts[:default_template_data]) )
       |> Map.put("Source", source)
@@ -305,13 +307,13 @@ defmodule ExAws.SES do
 
   defp add_replacement_template_data(destination, _, _), do: destination
 
-  defp format_tags(nil), do: %{}
+  defp format_tags(nil, _), do: %{}
 
-  defp format_tags(tags) do
+  defp format_tags(tags, param_name \\ "tags") do
     tags
     |> Enum.with_index(1)
     |> Enum.reduce(%{}, fn {tag, index}, acc ->
-      key = camelize_key("tags.member.#{index}")
+      key = camelize_key("#{param_name}.member.#{index}")
       Map.merge(acc, flatten_attrs(tag, key))
     end)
   end
