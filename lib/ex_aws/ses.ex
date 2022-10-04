@@ -516,7 +516,7 @@ defmodule ExAws.SES do
           dst :: destination,
           src :: binary,
           template :: binary,
-          template_data :: binary,
+          template_data :: map,
           opts :: [send_templated_email_opt]
         ) :: ExAws.Operation.Query.t()
   def send_templated_email(dst, src, template, template_data, opts \\ []) do
