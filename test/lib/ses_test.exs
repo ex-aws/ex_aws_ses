@@ -796,6 +796,113 @@ defmodule ExAws.SESTest do
     assert expected == SES.delete_template(templateName).params
   end
 
+  describe "get_email_template/1" do
+    test "with param" do
+      templateName = "MyTemplate"
+      expected = "/v2/email/templates/#{templateName}"
+      assert expected == SES.get_email_template(templateName).path
+    end
+  end
+
+  describe "list_email_templates/1" do
+    test "with pagination params" do
+      expected = "/v2/email/templates?NextToken=QUFBQUF&PageSize=1"
+      assert expected == SES.list_email_templates(page_size: 1, next_token: "QUFBQUF").path
+    end
+
+    test "without pagination params" do
+      expected = "/v2/email/templates?"
+      assert expected == SES.list_email_templates().path
+    end
+  end
+
+  describe "create_email_template/4" do
+    test "with required params only" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
+
+      expected = %{
+        "TemplateName" => templateName,
+        "TemplateContent" => %{
+          "Subject" => subject,
+          "Html" => html,
+          "Text" => text
+        }
+      }
+
+      assert expected == SES.create_email_template(templateName, subject, html, text).data
+    end
+
+    test "without text part" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+
+      expected = %{
+        "TemplateName" => templateName,
+        "TemplateContent" => %{
+          "Subject" => subject,
+          "Html" => html
+        }
+      }
+
+      assert expected == SES.create_email_template(templateName, subject, html, nil).data
+    end
+  end
+
+  describe "update_email_template/4" do
+    test "with required params only" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+      text = "Dear {{name}},\r\nYour favorite animal is {{favoriteanimal}}."
+
+      expected = %{
+        "TemplateContent" => %{
+          "Subject" => subject,
+          "Html" => html,
+          "Text" => text
+        }
+      }
+
+      assert expected == SES.update_email_template(templateName, subject, html, text).data
+    end
+
+    test "without text part" do
+      templateName = "MyTemplate"
+      subject = "Greetings, {{name}}!"
+      html = "<h1>Hello {{name}},</h1><p>Your favorite animal is {{favoriteanimal}}.</p>"
+
+      expected = %{
+        "TemplateContent" => %{
+          "Subject" => subject,
+          "Html" => html
+        }
+      }
+
+      assert expected == SES.update_email_template(templateName, subject, html, nil).data
+    end
+  end
+
+  describe "delete_email_template/1" do
+    test "with required param" do
+      templateName = "MyTemplate"
+      expected = "/v2/email/templates/MyTemplate"
+      assert expected == SES.delete_email_template(templateName).path
+    end
+  end
+
+  describe "test_render_email_template/2" do
+    test "with params" do
+      template_name = "MyTemplate"
+      template_data = %{data1: "data1", data2: "data2"}
+      expected = %{"TemplateData" => ~s({"data1":"data1","data2":"data2"})}
+      assert expected == SES.test_render_email_template(template_name, template_data).data
+    end
+  end
+
   test "#create custom email verification template" do
     template_name = "MyTemplate"
     from_email_address = "test@example.com"
@@ -895,5 +1002,128 @@ defmodule ExAws.SESTest do
              SES.send_custom_verification_email(email_address, template_name,
                configuration_set_name: configuration_set_name
              ).params
+  end
+
+  describe "list_custom_verification_email_templates_v2/1" do
+    test "with options" do
+      expected = "/v2/email/custom-verification-email-templates?NextToken=QUFBQUF&PageSize=1"
+      assert expected == SES.list_custom_verification_email_templates_v2(%{page_size: 1, next_token: "QUFBQUF"}).path
+    end
+
+    test "without options" do
+      expected = "/v2/email/custom-verification-email-templates?"
+      assert expected == SES.list_custom_verification_email_templates_v2().path
+    end
+  end
+
+  describe "get_custom_verification_email_templates_v2/1" do
+    test "with param" do
+      template_name = "MyTemplate"
+      expected = "/v2/email/custom-verification-email-templates/#{template_name}"
+      assert expected == SES.get_custom_verification_email_template_v2(template_name).path
+    end
+  end
+
+  describe "create_custom_verification_email_template_v2/6" do
+    test "with params" do
+      template_name = "MyTemplate"
+      from_email_address = "test@example.com"
+      template_subject = "Verified with ExAWS!"
+      template_content = "This is some custom content"
+      success_redirection_url = "https://example.com/success"
+      failure_redirection_url = "https://example.com/failure"
+
+      expected = %{
+        "TemplateName" => template_name,
+        "FromEmailAddress" => from_email_address,
+        "TemplateSubject" => template_subject,
+        "TemplateContent" => template_content,
+        "SuccessRedirectionURL" => success_redirection_url,
+        "FailureRedirectionURL" => failure_redirection_url
+      }
+
+      assert expected ==
+               SES.create_custom_verification_email_template_v2(
+                 template_name,
+                 from_email_address,
+                 template_subject,
+                 template_content,
+                 success_redirection_url,
+                 failure_redirection_url
+               ).data
+    end
+  end
+
+  describe "update_custom_verification_email_template_v2/2" do
+    test "with all options" do
+      template_name = "MyTemplate"
+      from_email_address = "test@example.com"
+      template_subject = "Verified with ExAWS!"
+      template_content = "This is some custom content"
+      success_redirection_url = "https://example.com/success"
+      failure_redirection_url = "https://example.com/failure"
+
+      expected = %{
+        "FromEmailAddress" => from_email_address,
+        "TemplateSubject" => template_subject,
+        "TemplateContent" => template_content,
+        "SuccessRedirectionURL" => success_redirection_url,
+        "FailureRedirectionURL" => failure_redirection_url
+      }
+
+      assert expected ==
+               SES.update_custom_verification_email_template_v2(template_name,
+                 from_email_address: from_email_address,
+                 template_subject: template_subject,
+                 template_content: template_content,
+                 success_redirection_url: success_redirection_url,
+                 failure_redirection_url: failure_redirection_url
+               ).data
+    end
+
+    test "without options" do
+      template_name = "MyTemplate"
+      assert %{} == SES.update_custom_verification_email_template_v2(template_name).data
+    end
+  end
+
+  describe "delete_custom_verification_email_template_v2/1" do
+    test "with param" do
+      template_name = "MyTemplate"
+      expected = "/v2/email/custom-verification-email-templates/#{template_name}"
+      assert expected == SES.delete_custom_verification_email_template_v2(template_name).path
+    end
+  end
+
+  describe "send_custom_verification_email_v2/3" do
+    test "with required params" do
+      template_name = "MyTemplate"
+      email_address = "test@example.com"
+
+      expected = %{
+        "TemplateName" => template_name,
+        "EmailAddress" => email_address
+      }
+
+      assert expected ==
+               SES.send_custom_verification_email_v2(email_address, template_name).data
+    end
+
+    test "with all options" do
+      template_name = "MyTemplate"
+      email_address = "test@example.com"
+      configuration_set_name = "MyConfigurationSet"
+
+      expected = %{
+        "TemplateName" => template_name,
+        "EmailAddress" => email_address,
+        "ConfigurationSetName" => configuration_set_name
+      }
+
+      assert expected ==
+               SES.send_custom_verification_email_v2(email_address, template_name,
+                 configuration_set_name: configuration_set_name
+               ).data
+    end
   end
 end
