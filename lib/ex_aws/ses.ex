@@ -389,9 +389,9 @@ defmodule ExAws.SES do
 
     params =
       %{
-        "TemplateName" => template_name
+        "TemplateName" => template_name,
+        "TemplateContent" => template_content
       }
-      |> Map.put("TemplateContent", template_content)
 
     request_v2(:post, "templates")
     |> Map.put(:data, params)
