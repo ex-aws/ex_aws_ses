@@ -318,6 +318,14 @@ defmodule ExAws.SES do
     request(:get_template, %{"TemplateName" => template_name})
   end
 
+  @doc """
+  Get an email templates via V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_GetEmailTemplate.html
+  """
+  @spec get_email_template(String.t()) :: ExAws.Operation.JSON.t()
+  def get_email_template(template_name) do
+    request_v2(:get, "templates/#{template_name}")
+  end
+
   @type list_templates_opt ::
           {:max_items, pos_integer}
           | {:next_token, String.t()}
@@ -329,6 +337,18 @@ defmodule ExAws.SES do
   def list_templates(opts \\ []) do
     params = build_opts(opts, [:max_items, :next_token])
     request(:list_templates, params)
+  end
+
+  @doc """
+  List email templates via V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_ListEmailTemplate.html
+  """
+  @type list_templates_opt_v2 ::
+          {:page_size, pos_integer}
+          | {:next_token, String.t()}
+  @spec list_email_templates(opts :: [] | [list_templates_opt_v2]) :: ExAws.Operation.JSON.t()
+  def list_email_templates(opts \\ []) do
+    params = build_opts(opts, [:page_size, :next_token])
+    request_v2(:get, "templates?#{URI.encode_query(params)}")
   end
 
   @doc """
@@ -356,6 +376,28 @@ defmodule ExAws.SES do
   end
 
   @doc """
+  Create an email template via V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_CreateEmailTemplate.html
+  """
+  @spec create_email_template(String.t(), String.t(), String.t(), String.t()) :: ExAws.Operation.JSON.t()
+  def create_email_template(template_name, subject, html, text) do
+    template_content =
+      %{
+        "Subject" => subject
+      }
+      |> put_if_not_nil("Html", html)
+      |> put_if_not_nil("Text", text)
+
+    params =
+      %{
+        "TemplateName" => template_name,
+        "TemplateContent" => template_content
+      }
+
+    request_v2(:post, "templates")
+    |> Map.put(:data, params)
+  end
+
+  @doc """
   Updates an email template.
   """
   @type update_template_opt :: {:configuration_set_name, String.t()}
@@ -380,6 +422,24 @@ defmodule ExAws.SES do
   end
 
   @doc """
+  Update an email template via V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_UpdateEmailTemplate.html
+  """
+  @spec update_email_template(String.t(), String.t(), String.t(), String.t()) :: ExAws.Operation.JSON.t()
+  def update_email_template(template_name, subject, html, text) do
+    template_content =
+      %{
+        "Subject" => subject
+      }
+      |> put_if_not_nil("Html", html)
+      |> put_if_not_nil("Text", text)
+
+    params = %{"TemplateContent" => template_content}
+
+    request_v2(:put, "templates/#{template_name}")
+    |> Map.put(:data, params)
+  end
+
+  @doc """
   Deletes an email template.
   """
   @spec delete_template(binary) :: ExAws.Operation.Query.t()
@@ -389,6 +449,14 @@ defmodule ExAws.SES do
     }
 
     request(:delete_template, params)
+  end
+
+  @doc """
+  Delete an email template via V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_DeleteEmailTemplate.html
+  """
+  @spec delete_email_template(binary) :: ExAws.Operation.JSON.t()
+  def delete_email_template(template_name) do
+    request_v2(:delete, "templates/#{template_name}")
   end
 
   ## Emails
@@ -714,6 +782,98 @@ defmodule ExAws.SES do
       |> Map.put("TemplateName", template_name)
 
     request(:send_custom_verification_email, params)
+  end
+
+  @doc "Create a custom verification email template via the SES V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_CreateCustomVerificationEmailTemplate.html"
+  @spec create_custom_verification_email_template_v2(
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t()
+        ) :: ExAws.Operation.JSON.t()
+  def create_custom_verification_email_template_v2(
+        template_name,
+        from_email_address,
+        template_subject,
+        template_content,
+        success_redirection_url,
+        failure_redirection_url
+      ) do
+    request_v2(:post, "/custom-verification-email-templates")
+    |> Map.put(:data, %{
+      "TemplateName" => template_name,
+      "FromEmailAddress" => from_email_address,
+      "TemplateSubject" => template_subject,
+      "TemplateContent" => template_content,
+      "SuccessRedirectionURL" => success_redirection_url,
+      "FailureRedirectionURL" => failure_redirection_url
+    })
+  end
+
+  @doc "Update an existing custom verification email template via the SES V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_UpdateCustomVerificationEmailTemplate.html"
+  @spec update_custom_verification_email_template_v2(
+          String.t(),
+          opts :: [update_custom_verification_email_template_opt] | []
+        ) ::
+          ExAws.Operation.JSON.t()
+  def update_custom_verification_email_template_v2(template_name, opts \\ []) do
+    params =
+      opts
+      |> build_opts([
+        :from_email_address,
+        :template_subject,
+        :template_content
+      ])
+      |> maybe_put_param(opts, :success_redirection_url, "SuccessRedirectionURL")
+      |> maybe_put_param(opts, :failure_redirection_url, "FailureRedirectionURL")
+
+    request_v2(:put, "custom-verification-email-templates/#{template_name}")
+    |> Map.put(:data, params)
+  end
+
+  @doc "Deletes an existing custom verification email template via the SES V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_DeleteCustomVerificationEmailTemplate.html"
+  @spec delete_custom_verification_email_template_v2(String.t()) :: ExAws.Operation.JSON.t()
+  def delete_custom_verification_email_template_v2(template_name) do
+    request_v2(:delete, "custom-verification-email-templates/#{template_name}")
+  end
+
+  @type list_custom_verification_email_templates_opt_v2 :: {:page_size, pos_integer} | {:next_token, String.t()}
+  @doc "Lists the existing custom verification email templates via the SES V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_ListCustomVerificationEmailTemplates.html"
+  @spec list_custom_verification_email_templates_v2(opts :: [list_custom_verification_email_templates_opt_v2()] | []) ::
+          ExAws.Operation.JSON.t()
+  def list_custom_verification_email_templates_v2(opts \\ []) do
+    params = build_opts(opts, [:page_size, :next_token])
+    request_v2(:get, "custom-verification-email-templates?#{URI.encode_query(params)}")
+  end
+
+  @doc "Get a custom verification email template via the SES V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_GetCustomVerificationEmailTemplate.html"
+  @spec get_custom_verification_email_template_v2(String.t()) :: ExAws.Operation.JSON.t()
+  def get_custom_verification_email_template_v2(template_name) do
+    request_v2(:get, "custom-verification-email-templates/#{template_name}")
+  end
+
+  @doc "Send a verification email using a custom template via SES V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_SendCustomVerificationEmail.html"
+  @spec send_custom_verification_email_v2(String.t(), String.t(), opts :: [send_custom_verification_email_opt] | []) ::
+          ExAws.Operation.JSON.t()
+  def send_custom_verification_email_v2(email_address, template_name, opts \\ []) do
+    params =
+      opts
+      |> build_opts([:configuration_set_name])
+      |> Map.put("EmailAddress", email_address)
+      |> Map.put("TemplateName", template_name)
+
+    request_v2(:post, "outbound-custom-verification-emails")
+    |> Map.put(:data, params)
+  end
+
+  @spec test_render_email_template(String.t(), map()) :: ExAws.Operation.JSON.t()
+  def test_render_email_template(template_name, template_data) do
+    request_v2(:post, "templates/#{template_name}/render")
+    |> Map.put(:data, %{
+      "TemplateData" => format_template_data(template_data)
+    })
   end
 
   ## Receipt Rules and Rule Sets
