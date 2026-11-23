@@ -222,6 +222,91 @@ defmodule ExAws.SESTest do
     end
   end
 
+  describe "v2 path segment encoding (GHSA-m65r-v8mq-xj8v)" do
+    # Caller-supplied names are interpolated into V2 request paths. They must be
+    # confined to a single path segment so that a hostile value cannot redirect
+    # the signed request to a different SES resource.
+    @hostile_list_name "x/../suppression/addresses/victim@example.com"
+    @encoded_list_name "x%2F..%2Fsuppression%2Faddresses%2Fvictim%40example.com"
+
+    test "list_name containing path separators is confined to one segment" do
+      email = "a@example.com"
+
+      assert SES.get_contact_list(@hostile_list_name).path == "/v2/email/contact-lists/#{@encoded_list_name}"
+      assert SES.update_contact_list(@hostile_list_name).path == "/v2/email/contact-lists/#{@encoded_list_name}"
+      assert SES.delete_contact_list(@hostile_list_name).path == "/v2/email/contact-lists/#{@encoded_list_name}"
+
+      assert SES.create_contact(@hostile_list_name, email).path ==
+               "/v2/email/contact-lists/#{@encoded_list_name}/contacts"
+
+      assert SES.list_contacts(@hostile_list_name).path == "/v2/email/contact-lists/#{@encoded_list_name}/contacts"
+
+      assert SES.get_contact(@hostile_list_name, email).path ==
+               "/v2/email/contact-lists/#{@encoded_list_name}/contacts/a%40example.com"
+
+      assert SES.update_contact(@hostile_list_name, email).path ==
+               "/v2/email/contact-lists/#{@encoded_list_name}/contacts/a%40example.com"
+
+      assert SES.delete_contact(@hostile_list_name, email).path ==
+               "/v2/email/contact-lists/#{@encoded_list_name}/contacts/a%40example.com"
+    end
+
+    test "list_name cannot inject a query string or fragment" do
+      assert SES.get_contact_list("x?PageSize=1&NextToken=abc").path ==
+               "/v2/email/contact-lists/x%3FPageSize%3D1%26NextToken%3Dabc"
+
+      assert SES.get_contact_list("x#frag").path == "/v2/email/contact-lists/x%23frag"
+    end
+
+    test "dot-segment names are escaped" do
+      assert SES.get_contact_list(".").path == "/v2/email/contact-lists/%2E"
+      assert SES.get_contact_list("..").path == "/v2/email/contact-lists/%2E%2E"
+    end
+
+    test "email containing path separators is confined to one segment" do
+      hostile_email = "a/../../../suppression/addresses/victim@example.com"
+      encoded_email = "a%2F..%2F..%2F..%2Fsuppression%2Faddresses%2Fvictim%40example.com"
+
+      assert SES.get_contact(@list_name, hostile_email).path ==
+               "/v2/email/contact-lists/#{@list_name}/contacts/#{encoded_email}"
+
+      assert SES.update_contact(@list_name, hostile_email).path ==
+               "/v2/email/contact-lists/#{@list_name}/contacts/#{encoded_email}"
+
+      assert SES.delete_contact(@list_name, hostile_email).path ==
+               "/v2/email/contact-lists/#{@list_name}/contacts/#{encoded_email}"
+
+      assert SES.delete_suppressed_destination(hostile_email).path ==
+               "/v2/email/suppression/addresses/#{encoded_email}"
+    end
+
+    test "template_name containing path separators is confined to one segment" do
+      hostile = "t/../../contact-lists/mylist"
+      encoded = "t%2F..%2F..%2Fcontact-lists%2Fmylist"
+
+      assert SES.get_email_template(hostile).path == "/v2/email/templates/#{encoded}"
+      assert SES.update_email_template(hostile, "subject", "<p/>", "text").path == "/v2/email/templates/#{encoded}"
+      assert SES.delete_email_template(hostile).path == "/v2/email/templates/#{encoded}"
+      assert SES.test_render_email_template(hostile, %{}).path == "/v2/email/templates/#{encoded}/render"
+
+      assert SES.get_custom_verification_email_template_v2(hostile).path ==
+               "/v2/email/custom-verification-email-templates/#{encoded}"
+
+      assert SES.update_custom_verification_email_template_v2(hostile).path ==
+               "/v2/email/custom-verification-email-templates/#{encoded}"
+
+      assert SES.delete_custom_verification_email_template_v2(hostile).path ==
+               "/v2/email/custom-verification-email-templates/#{encoded}"
+    end
+
+    test "ordinary names are left untouched" do
+      assert SES.get_contact_list("My-list_1.0~").path == "/v2/email/contact-lists/My-list_1.0~"
+
+      assert SES.get_contact("list", "test+bar@example.com").path ==
+               "/v2/email/contact-lists/list/contacts/test%2Bbar%40example.com"
+    end
+  end
+
   describe "suppressed destinations" do
     test "#put_suppressed_destination" do
       email = "test@example.com"
