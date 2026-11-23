@@ -964,20 +964,31 @@ defmodule ExAws.SES do
     |> Map.put(:path, @v2_path <> "/#{resource}")
   end
 
-  # Percent-encodes a caller-supplied value so that it occupies exactly one
-  # path segment of a V2 request URL. Everything outside the RFC 3986
-  # "unreserved" set is escaped, including "/", "?" and "#", so a value such as
-  # "x/../suppression/addresses/foo" can no longer escape its intended
-  # resource. The dot-segments "." and ".." are escaped as well so that a path
-  # normaliser cannot collapse them.
+  # Percent-encodes a caller-supplied value (list name, template name, email
+  # address) so that it occupies exactly one path segment of a V2 request URL.
+  # A value such as "x/../suppression/addresses/foo" can then no longer leave
+  # its intended resource (GHSA-m65r-v8mq-xj8v).
   #
-  # `ExAws.Request.Url.uri_encode/1` is deliberately not used here: it leaves
-  # "/" unencoded because it is meant for whole paths, not single segments.
+  # The encoding itself is `ExAws.Request.Url.encode_path_segment/1`, which is
+  # shared by the ex_aws service libraries: everything outside the RFC 3986
+  # unreserved set is encoded, including "/", "?", "#" and ":", and so are the
+  # dot segments "." and "..".
+  #
+  # ex_aws releases that predate that function are still supported, so it is
+  # called only when it exists and the same encoding is done here otherwise.
+  # Once the ex_aws requirement in mix.exs is raised to a release that has it,
+  # the fallback (and `apply/3`, which is only there to keep the compiler from
+  # warning about a function older releases lack) can go.
   defp encode_path_segment(segment) do
-    case to_string(segment) do
-      "." -> "%2E"
-      ".." -> "%2E%2E"
-      string -> URI.encode(string, &URI.char_unreserved?/1)
+    if Code.ensure_loaded?(ExAws.Request.Url) and
+         function_exported?(ExAws.Request.Url, :encode_path_segment, 1) do
+      apply(ExAws.Request.Url, :encode_path_segment, [segment])
+    else
+      case to_string(segment) do
+        "." -> "%2E"
+        ".." -> "%2E%2E"
+        string -> URI.encode(string, &URI.char_unreserved?/1)
+      end
     end
   end
 
