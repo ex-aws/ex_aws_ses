@@ -10,7 +10,7 @@ defmodule ExAws.SES.Mixfile do
     [
       app: :ex_aws_ses,
       version: @version,
-      elixir: "~> 1.5",
+      elixir: "~> 1.16",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -46,10 +46,10 @@ defmodule ExAws.SES.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:hackney, ">= 0.0.0", only: [:dev, :test]},
+      {:req, "~> 0.5", only: [:dev, :test]},
       {:sweet_xml, ">= 0.0.0", only: [:dev, :test]},
       {:jason, ">= 0.0.0", only: [:dev, :test]},
-      {:dialyxir, "~> 1.0.0-rc.3", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test], runtime: false},
       ex_aws()
     ]

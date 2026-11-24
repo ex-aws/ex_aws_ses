@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Require Elixir 1.16 or later.
+- Update development and test dependencies; use Req instead of hackney as the
+  HTTP client in dev/test.
+- Update the README installation instructions: recommend Jason and SweetXml,
+  hackney 4, and document Req as an alternative HTTP client.
+- Format the code base with `mix format`.
 - Security: percent-encode caller-supplied `list_name`, email address and
   `template_name` values before interpolating them into SES V2 request paths,
   so that a value containing `/`, `?`, `#` or dot-segments can no longer escape

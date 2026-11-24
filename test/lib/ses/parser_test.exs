@@ -42,7 +42,11 @@ defmodule ExAws.SES.ParserTest do
       |> to_success
 
     {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :verify_domain_identity)
-    assert parsed_doc == %{request_id: "d8eb8250-be9b-11e6-b7f7-d570946af758", verification_token: "u4GmlJ3cPJfxxZbLSPMkLOPjQvJW1HPvA6Pmi21CPIE="}
+
+    assert parsed_doc == %{
+             request_id: "d8eb8250-be9b-11e6-b7f7-d570946af758",
+             verification_token: "u4GmlJ3cPJfxxZbLSPMkLOPjQvJW1HPvA6Pmi21CPIE="
+           }
   end
 
   test "#parse a verify_domain_dkim response" do
@@ -64,9 +68,18 @@ defmodule ExAws.SES.ParserTest do
       |> to_success
 
     {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :verify_domain_dkim)
-    assert parsed_doc == %{request_id: "d8eb8250-be9b-11e6-b7f7-d570946af758", dkim_tokens: %{members: ["5livxhounddpfqprdog22m4c337ake5o", "tbnwx5g3l0zmstwf2c258r36pvpnksbt", "bbtl43drumsloilm2zfjlhj3c7v12a5d"]}}
-  end
 
+    assert parsed_doc == %{
+             request_id: "d8eb8250-be9b-11e6-b7f7-d570946af758",
+             dkim_tokens: %{
+               members: [
+                 "5livxhounddpfqprdog22m4c337ake5o",
+                 "tbnwx5g3l0zmstwf2c258r36pvpnksbt",
+                 "bbtl43drumsloilm2zfjlhj3c7v12a5d"
+               ]
+             }
+           }
+  end
 
   test "#parse identity_verification_attributes" do
     rsp =
@@ -230,11 +243,12 @@ defmodule ExAws.SES.ParserTest do
       """
       |> to_success()
 
-      {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :send_raw_email)
-      assert parsed_doc == %{
-        request_id: "3c2ddfd4-ff21-4a3d-af5f-97ec74811e22",
-        message_id: "0101018264278cea-406a0406-5f46-412b-8f32-05ef31a62aa0-000000"
-      }
+    {:ok, %{body: parsed_doc}} = Parsers.parse(rsp, :send_raw_email)
+
+    assert parsed_doc == %{
+             request_id: "3c2ddfd4-ff21-4a3d-af5f-97ec74811e22",
+             message_id: "0101018264278cea-406a0406-5f46-412b-8f32-05ef31a62aa0-000000"
+           }
   end
 
   test "#parse a delete_identity response" do

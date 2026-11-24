@@ -10,18 +10,31 @@ Service module for [https://github.com/ex-aws/ex_aws](https://github.com/ex-aws/
 
 ## Installation
 
+Requires Elixir 1.16 or later.
+
 The package can be installed by adding `:ex_aws_ses` to your list of dependencies in `mix.exs`
-along with `:ex_aws` and your preferred JSON codec / HTTP client
+along with `:ex_aws`, a JSON codec, an HTTP client and, to have responses from
+the XML-based SES API parsed, `:sweet_xml`:
 
 ```elixir
 def deps do
   [
     {:ex_aws, "~> 2.0"},
     {:ex_aws_ses, "~> 2.0"},
-    {:poison, "~> 3.0"},
-    {:hackney, "~> 1.9"},
+    {:jason, "~> 1.0"},
+    {:sweet_xml, "~> 0.7"},
+    {:hackney, "~> 4.0"}
   ]
 end
+```
+
+`:hackney` is the default HTTP client for ExAws; version 4 requires
+Erlang/OTP 27 or later. On older OTP releases, or if you simply prefer it, use
+[Req](https://hexdocs.pm/req) instead by depending on `{:req, "~> 0.5"}` and
+configuring ExAws to use it:
+
+```elixir
+config :ex_aws, http_client: ExAws.Request.Req
 ```
 
 Documentation can be found at [https://hexdocs.pm/ex_aws_ses](https://hexdocs.pm/ex_aws_ses).

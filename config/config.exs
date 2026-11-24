@@ -28,3 +28,7 @@ import Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+
+# ExAws defaults to hackney, whose current major version needs OTP 27+.
+# Use Req in dev/test so the suite also runs on Elixir 1.16 (OTP 24-26).
+config :ex_aws, http_client: ExAws.Request.Req
