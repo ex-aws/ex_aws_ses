@@ -144,7 +144,7 @@ defmodule ExAws.SES do
         "Topics" => opts[:topics]
       })
 
-    request_v2(:put, "contact-lists/#{list_name}")
+    request_v2(:put, "contact-lists/#{encode_path_segment(list_name)}")
     |> Map.put(:data, data)
   end
 
@@ -164,7 +164,7 @@ defmodule ExAws.SES do
   """
   @spec get_contact_list(String.t()) :: ExAws.Operation.JSON.t()
   def get_contact_list(list_name) do
-    request_v2(:get, "contact-lists/#{list_name}")
+    request_v2(:get, "contact-lists/#{encode_path_segment(list_name)}")
   end
 
   @doc """
@@ -172,7 +172,7 @@ defmodule ExAws.SES do
   """
   @spec delete_contact_list(String.t()) :: ExAws.Operation.JSON.t()
   def delete_contact_list(list_name) do
-    request_v2(:delete, "contact-lists/#{list_name}")
+    request_v2(:delete, "contact-lists/#{encode_path_segment(list_name)}")
   end
 
   ## Contacts
@@ -206,7 +206,7 @@ defmodule ExAws.SES do
         "UnsubscribeAll" => opts[:unsubscribe_all]
       })
 
-    request_v2(:post, "contact-lists/#{list_name}/contacts")
+    request_v2(:post, "contact-lists/#{encode_path_segment(list_name)}/contacts")
     |> Map.put(:data, data)
   end
 
@@ -222,9 +222,9 @@ defmodule ExAws.SES do
         "UnsubscribeAll" => opts[:unsubscribe_all]
       })
 
-    uri_encoded_email = ExAws.Request.Url.uri_encode(email)
+    uri_encoded_email = encode_path_segment(email)
 
-    request_v2(:put, "contact-lists/#{list_name}/contacts/#{uri_encoded_email}")
+    request_v2(:put, "contact-lists/#{encode_path_segment(list_name)}/contacts/#{uri_encoded_email}")
     |> Map.put(:data, data)
   end
 
@@ -233,7 +233,7 @@ defmodule ExAws.SES do
   """
   @spec list_contacts(String.t()) :: ExAws.Operation.JSON.t()
   def list_contacts(list_name) do
-    request_v2(:get, "contact-lists/#{list_name}/contacts")
+    request_v2(:get, "contact-lists/#{encode_path_segment(list_name)}/contacts")
   end
 
   @doc """
@@ -241,8 +241,8 @@ defmodule ExAws.SES do
   """
   @spec get_contact(String.t(), email_address) :: ExAws.Operation.JSON.t()
   def get_contact(list_name, email) do
-    uri_encoded_email = ExAws.Request.Url.uri_encode(email)
-    request_v2(:get, "contact-lists/#{list_name}/contacts/#{uri_encoded_email}")
+    uri_encoded_email = encode_path_segment(email)
+    request_v2(:get, "contact-lists/#{encode_path_segment(list_name)}/contacts/#{uri_encoded_email}")
   end
 
   @doc """
@@ -250,8 +250,8 @@ defmodule ExAws.SES do
   """
   @spec delete_contact(String.t(), email_address) :: ExAws.Operation.JSON.t()
   def delete_contact(list_name, email) do
-    uri_encoded_email = ExAws.Request.Url.uri_encode(email)
-    request_v2(:delete, "contact-lists/#{list_name}/contacts/#{uri_encoded_email}")
+    uri_encoded_email = encode_path_segment(email)
+    request_v2(:delete, "contact-lists/#{encode_path_segment(list_name)}/contacts/#{uri_encoded_email}")
   end
 
   @doc """
@@ -304,7 +304,7 @@ defmodule ExAws.SES do
   """
   @spec delete_suppressed_destination(String.t()) :: ExAws.Operation.JSON.t()
   def delete_suppressed_destination(email_address) do
-    uri_encoded_email_address = ExAws.Request.Url.uri_encode(email_address)
+    uri_encoded_email_address = encode_path_segment(email_address)
 
     request_v2(:delete, "suppression/addresses/#{uri_encoded_email_address}")
   end
@@ -323,7 +323,7 @@ defmodule ExAws.SES do
   """
   @spec get_email_template(String.t()) :: ExAws.Operation.JSON.t()
   def get_email_template(template_name) do
-    request_v2(:get, "templates/#{template_name}")
+    request_v2(:get, "templates/#{encode_path_segment(template_name)}")
   end
 
   @type list_templates_opt ::
@@ -435,7 +435,7 @@ defmodule ExAws.SES do
 
     params = %{"TemplateContent" => template_content}
 
-    request_v2(:put, "templates/#{template_name}")
+    request_v2(:put, "templates/#{encode_path_segment(template_name)}")
     |> Map.put(:data, params)
   end
 
@@ -456,7 +456,7 @@ defmodule ExAws.SES do
   """
   @spec delete_email_template(binary) :: ExAws.Operation.JSON.t()
   def delete_email_template(template_name) do
-    request_v2(:delete, "templates/#{template_name}")
+    request_v2(:delete, "templates/#{encode_path_segment(template_name)}")
   end
 
   ## Emails
@@ -829,14 +829,14 @@ defmodule ExAws.SES do
       |> maybe_put_param(opts, :success_redirection_url, "SuccessRedirectionURL")
       |> maybe_put_param(opts, :failure_redirection_url, "FailureRedirectionURL")
 
-    request_v2(:put, "custom-verification-email-templates/#{template_name}")
+    request_v2(:put, "custom-verification-email-templates/#{encode_path_segment(template_name)}")
     |> Map.put(:data, params)
   end
 
   @doc "Deletes an existing custom verification email template via the SES V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_DeleteCustomVerificationEmailTemplate.html"
   @spec delete_custom_verification_email_template_v2(String.t()) :: ExAws.Operation.JSON.t()
   def delete_custom_verification_email_template_v2(template_name) do
-    request_v2(:delete, "custom-verification-email-templates/#{template_name}")
+    request_v2(:delete, "custom-verification-email-templates/#{encode_path_segment(template_name)}")
   end
 
   @type list_custom_verification_email_templates_opt_v2 :: {:page_size, pos_integer} | {:next_token, String.t()}
@@ -851,7 +851,7 @@ defmodule ExAws.SES do
   @doc "Get a custom verification email template via the SES V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_GetCustomVerificationEmailTemplate.html"
   @spec get_custom_verification_email_template_v2(String.t()) :: ExAws.Operation.JSON.t()
   def get_custom_verification_email_template_v2(template_name) do
-    request_v2(:get, "custom-verification-email-templates/#{template_name}")
+    request_v2(:get, "custom-verification-email-templates/#{encode_path_segment(template_name)}")
   end
 
   @doc "Send a verification email using a custom template via SES V2 API. See https://docs.aws.amazon.com/ses/latest/APIReference-V2/API_SendCustomVerificationEmail.html"
@@ -870,7 +870,7 @@ defmodule ExAws.SES do
 
   @spec test_render_email_template(String.t(), map()) :: ExAws.Operation.JSON.t()
   def test_render_email_template(template_name, template_data) do
-    request_v2(:post, "templates/#{template_name}/render")
+    request_v2(:post, "templates/#{encode_path_segment(template_name)}/render")
     |> Map.put(:data, %{
       "TemplateData" => format_template_data(template_data)
     })
@@ -962,6 +962,34 @@ defmodule ExAws.SES do
   defp request_v2(method, resource) do
     request_v2(method)
     |> Map.put(:path, @v2_path <> "/#{resource}")
+  end
+
+  # Percent-encodes a caller-supplied value (list name, template name, email
+  # address) so that it occupies exactly one path segment of a V2 request URL.
+  # A value such as "x/../suppression/addresses/foo" can then no longer leave
+  # its intended resource (GHSA-m65r-v8mq-xj8v).
+  #
+  # The encoding itself is `ExAws.Request.Url.encode_path_segment/1`, which is
+  # shared by the ex_aws service libraries: everything outside the RFC 3986
+  # unreserved set is encoded, including "/", "?", "#" and ":", and so are the
+  # dot segments "." and "..".
+  #
+  # ex_aws releases that predate that function are still supported, so it is
+  # called only when it exists and the same encoding is done here otherwise.
+  # Once the ex_aws requirement in mix.exs is raised to a release that has it,
+  # the fallback (and `apply/3`, which is only there to keep the compiler from
+  # warning about a function older releases lack) can go.
+  defp encode_path_segment(segment) do
+    if Code.ensure_loaded?(ExAws.Request.Url) and
+         function_exported?(ExAws.Request.Url, :encode_path_segment, 1) do
+      apply(ExAws.Request.Url, :encode_path_segment, [segment])
+    else
+      case to_string(segment) do
+        "." -> "%2E"
+        ".." -> "%2E%2E"
+        string -> URI.encode(string, &URI.char_unreserved?/1)
+      end
+    end
   end
 
   defp build_opts(opts, permitted) do

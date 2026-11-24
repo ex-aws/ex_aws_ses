@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Security: percent-encode caller-supplied `list_name`, email address and
+  `template_name` values before interpolating them into SES V2 request paths,
+  so that a value containing `/`, `?`, `#` or dot-segments can no longer escape
+  its intended path segment and redirect a signed request to another SES
+  resource in the account (GHSA-m65r-v8mq-xj8v).
+
 ## v2.4.1 - 2021-03-03
 
 - Fix email address encoding in `PutSuppressedDestination` `DeleteSuppressedDestination` by @mtarnovan
